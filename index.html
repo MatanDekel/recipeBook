@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ספר המתכונים של עדן</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Assistant:wght@300;400;500;600;700&family=Heebo:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF6EE;
+    --paper-deep:#F2E9D8;
+    --ink:#3A2E27;
+    --ink-soft:#6B5D52;
+    --accent:#8C3B3B;
+    --accent-deep:#6E2C2C;
+    --tan:#C9A98C;
+    --gold:#B08D3D;
+    --sage:#7C8B6F;
+    --spine-shadow: rgba(58,46,39,0.18);
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{
+    margin:0;
+    height:100%;
+    background:var(--paper-deep);
+    color:var(--ink);
+    font-family:'Assistant', sans-serif;
+  }
+
+  body{
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* ---------- Sidebar / Table of contents ---------- */
+  .toc{
+    width:280px;
+    min-width:280px;
+    background:var(--ink);
+    color:var(--paper);
+    padding:36px 24px;
+    display:flex;
+    flex-direction:column;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    box-shadow: -8px 0 24px var(--spine-shadow) inset;
+  }
+
+  .toc-brand{
+    background:none;
+    border:none;
+    text-align:right;
+    cursor:pointer;
+    padding:0;
+    margin:0 0 28px;
+    color:inherit;
+  }
+
+  .toc h1{
+    font-family:'Frank Ruhl Libre', serif;
+    font-size:1.5rem;
+    font-weight:700;
+    margin:0 0 4px;
+    color:var(--paper);
+  }
+
+  .toc .sub{
+    font-size:0.8rem;
+    color:var(--tan);
+    margin:0;
+    letter-spacing:0.02em;
+  }
+
+  .toc-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    flex:1;
+  }
+
+  .toc-category{
+    font-family:'Heebo', sans-serif;
+    font-size:0.7rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin:20px 8px 6px;
+    text-transform:uppercase;
+  }
+  .toc-category:first-child{ margin-top:0; }
+
+  .toc-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
+    background:none;
+    border:none;
+    color:var(--paper);
+    font-family:'Assistant', sans-serif;
+    font-size:0.95rem;
+    text-align:right;
+    padding:10px 8px;
+    border-radius:6px;
+    cursor:pointer;
+    opacity:0.7;
+    transition:opacity 0.2s ease, background 0.2s ease;
+  }
+
+  .toc-item:hover{ opacity:1; background:rgba(255,255,255,0.06); }
+
+  .toc-item.active{
+    opacity:1;
+    background:rgba(255,255,255,0.1);
+    box-shadow: inset 3px 0 0 var(--gold);
+  }
+
+  .toc-num{
+    font-family:'Heebo', sans-serif;
+    font-size:0.75rem;
+    color:var(--gold);
+    min-width:22px;
+  }
+
+  .toc-footer{
+    margin-top:24px;
+    padding-top:20px;
+    border-top:1px solid rgba(255,255,255,0.15);
+  }
+
+  .print-btn{
+    width:100%;
+    background:var(--accent);
+    color:var(--paper);
+    border:none;
+    padding:12px 14px;
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-size:0.9rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:background 0.2s ease;
+  }
+  .print-btn:hover{ background:var(--accent-deep); }
+  .print-btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+  .hint{
+    font-size:0.72rem;
+    color:var(--tan);
+    margin:10px 2px 0;
+    line-height:1.5;
+  }
+
+  /* ---------- Main page area ---------- */
+  main{
+    flex:1;
+    padding:56px 64px;
+    display:flex;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(255,255,255,0.5), transparent 40%),
+      var(--paper);
+    position:relative;
+  }
+
+  main::before{
+    content:"";
+    position:absolute;
+    top:0; bottom:0; right:0;
+    width:18px;
+    background:linear-gradient(to left, var(--spine-shadow), transparent);
+    pointer-events:none;
+  }
+
+  .page{
+    max-width:720px;
+    width:100%;
+  }
+
+  .recipe{ display:none; animation: pageIn 0.35s ease; }
+  .recipe.active{ display:block; }
+
+  @keyframes pageIn{
+    from{ opacity:0; transform:translateY(6px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* ---------- Cover / table of contents page ---------- */
+  .cover{ display:none; animation: pageIn 0.35s ease; }
+  .cover.active{ display:block; }
+
+  .cover-title{
+    font-family:'Frank Ruhl Libre', serif;
+    font-size:3rem;
+    font-weight:900;
+    margin:0 0 6px;
+    color:var(--accent-deep);
+  }
+
+  .cover-sub{
+    font-size:1rem;
+    color:var(--ink-soft);
+    margin:0 0 48px;
+  }
+
+  .toc-section{ margin-bottom:36px; }
+
+  .toc-section h3{
+    font-family:'Frank Ruhl Libre', serif;
+    font-size:1.15rem;
+    font-weight:700;
+    color:var(--sage);
+    margin:0 0 16px;
+  }
+
+  .toc-entries{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+
+  .toc-entry{
+    width:100%;
+    background:none;
+    border:none;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    padding:11px 2px;
+    cursor:pointer;
+    font-family:'Assistant', sans-serif;
+    font-size:1.02rem;
+    color:var(--ink);
+    text-align:right;
+    text-decoration:none;
+    border-bottom:1px solid var(--paper-deep);
+    transition:color 0.2s ease;
+  }
+  .toc-entry:hover{ color:var(--accent-deep); }
+
+  .toc-entry .e-num{
+    font-family:'Heebo', sans-serif;
+    font-size:0.8rem;
+    color:var(--gold);
+    min-width:24px;
+  }
+
+  .toc-entry .e-leader{
+    flex:1;
+    border-bottom:1px dotted var(--tan);
+    height:1px;
+    align-self:center;
+  }
+
+  .toc-entry .e-title{ flex-shrink:0; }
+
+  .chapter-num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:1.5px solid var(--gold);
+    color:var(--gold);
+    font-family:'Heebo', sans-serif;
+    font-size:1rem;
+    font-weight:600;
+    margin-bottom:18px;
+  }
+
+  .back-to-list{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-family:'Assistant', sans-serif;
+    font-size:0.85rem;
+    cursor:pointer;
+    padding:0;
+    margin-bottom:18px;
+    transition:color 0.2s ease;
+  }
+  .back-to-list:hover{ color:var(--accent-deep); }
+
+  .recipe h2{
+    font-family:'Frank Ruhl Libre', serif;
+    font-size:2.4rem;
+    font-weight:700;
+    margin:0 0 10px;
+    line-height:1.15;
+  }
+
+  .prep-time{
+    display:inline-block;
+    font-family:'Assistant', sans-serif;
+    font-size:0.85rem;
+    color:var(--accent-deep);
+    background:var(--paper-deep);
+    border-radius:6px;
+    padding:5px 12px;
+    margin:0 0 16px;
+  }
+
+  .meta-row{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-bottom:36px;
+    font-size:0.9rem;
+    color:var(--ink-soft);
+  }
+
+  .meta-row span{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .meta-row .dot{
+    width:5px; height:5px; border-radius:50%; background:var(--sage);
+  }
+
+  .divider{
+    border:none;
+    height:1px;
+    background:repeating-linear-gradient(to left, var(--tan) 0 6px, transparent 6px 12px);
+    margin:0 0 32px;
+  }
+
+  .cols{
+    display:grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap:44px;
+  }
+
+  .cols.single{
+    grid-template-columns: 1fr;
+    max-width:420px;
+  }
+
+  .block h3{
+    font-family:'Frank Ruhl Libre', serif;
+    font-size:1.1rem;
+    font-weight:700;
+    color:var(--accent-deep);
+    margin:0 0 14px;
+  }
+
+  .ingredients{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+
+  .ingredients li{
+    padding:8px 0;
+    border-bottom:1px dashed var(--tan);
+    font-size:0.94rem;
+    display:flex;
+    gap:8px;
+  }
+  .ingredients li:last-child{ border-bottom:none; }
+
+  .ingredients .amt{
+    font-family:'Heebo', sans-serif;
+    color:var(--accent-deep);
+    font-weight:600;
+    white-space:nowrap;
+  }
+
+  .steps{
+    margin:0;
+    padding:0;
+    list-style:none;
+    counter-reset:step;
+  }
+
+  .steps li{
+    counter-increment:step;
+    position:relative;
+    padding-right:38px;
+    margin-bottom:20px;
+    font-size:0.97rem;
+    line-height:1.65;
+  }
+
+  .steps li::before{
+    content: counter(step);
+    position:absolute;
+    right:0;
+    top:1px;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    background:var(--accent);
+    color:var(--paper);
+    font-family:'Heebo', sans-serif;
+    font-size:0.8rem;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .notes{
+    margin-top:36px;
+    padding:18px 20px;
+    background:var(--paper-deep);
+    border-radius:10px;
+    border-inline-start: 3px solid var(--sage);
+  }
+
+  .notes h3{
+    font-family:'Frank Ruhl Libre', serif;
+    font-size:1rem;
+    color:var(--sage);
+    margin:0 0 10px;
+  }
+
+  .notes ul{
+    margin:0;
+    padding-inline-start:18px;
+    font-size:0.88rem;
+    line-height:1.7;
+    color:var(--ink-soft);
+  }
+
+  .page-nav{
+    display:flex;
+    justify-content:space-between;
+    margin-top:48px;
+    padding-top:20px;
+    border-top:1px solid var(--tan);
+  }
+
+  .page-nav button{
+    background:none;
+    border:none;
+    font-family:'Assistant', sans-serif;
+    font-size:0.9rem;
+    color:var(--ink-soft);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:color 0.2s ease;
+  }
+  .page-nav button:hover:not(:disabled){ color:var(--accent-deep); }
+  .page-nav button:disabled{ opacity:0.25; cursor:default; }
+
+  @media (max-width: 760px){
+    body{ flex-direction:column; }
+    .toc{ width:100%; min-width:0; height:auto; position:relative; padding:24px; }
+    main{ padding:32px 20px; }
+    .cols{ grid-template-columns:1fr; gap:28px; }
+    .recipe h2{ font-size:1.9rem; }
+  }
+
+  /* ---------- Print (PDF export) ---------- */
+  /* ---------- Login / signup overlay ---------- */
+  .auth-overlay{
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    background:var(--paper-deep);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+
+  .auth-card{
+    background:var(--paper);
+    border-radius:16px;
+    padding:40px 36px;
+    max-width:380px;
+    width:100%;
+    box-shadow:0 20px 60px rgba(58,46,39,0.25);
+  }
+
+  .auth-title{
+    font-family:'Frank Ruhl Libre', serif;
+    font-size:1.6rem;
+    font-weight:700;
+    margin:0 0 6px;
+    color:var(--accent-deep);
+    text-align:center;
+  }
+
+  .auth-sub{
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    text-align:center;
+    margin:0 0 28px;
+  }
+
+  .auth-tabs{
+    display:flex;
+    margin-bottom:24px;
+    border-bottom:1px solid var(--tan);
+  }
+
+  .auth-tab{
+    flex:1;
+    background:none;
+    border:none;
+    padding:10px;
+    font-family:'Assistant', sans-serif;
+    font-size:0.95rem;
+    color:var(--ink-soft);
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    margin-bottom:-1px;
+  }
+
+  .auth-tab.active{
+    color:var(--accent-deep);
+    border-bottom-color:var(--accent-deep);
+    font-weight:600;
+  }
+
+  .auth-form{
+    display:none;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .auth-form.active{ display:flex; }
+
+  .auth-form input{
+    padding:11px 14px;
+    border:1px solid var(--tan);
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-size:0.95rem;
+    background:var(--paper);
+    color:var(--ink);
+  }
+
+  .auth-form input:focus{
+    outline:2px solid var(--gold);
+    outline-offset:1px;
+  }
+
+  .auth-submit{
+    background:var(--accent);
+    color:var(--paper);
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-weight:600;
+    font-size:0.95rem;
+    cursor:pointer;
+    margin-top:6px;
+    transition:background 0.2s ease;
+  }
+  .auth-submit:hover{ background:var(--accent-deep); }
+
+  .auth-error{
+    color:var(--accent-deep);
+    font-size:0.82rem;
+    text-align:center;
+    min-height:1.2em;
+    margin:14px 0 0;
+  }
+
+  body.auth-locked nav.toc,
+  body.auth-locked main{
+    display:none;
+  }
+
+  .user-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin:14px 0 0;
+    font-size:0.78rem;
+    color:var(--tan);
+  }
+
+  .logout-link{
+    background:none;
+    border:none;
+    color:var(--tan);
+    font-size:0.78rem;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:0;
+  }
+  .logout-link:hover{ color:var(--paper); }
+
+  @media print{
+    .auth-overlay{ display:none !important; }
+    body.auth-locked nav.toc,
+    body.auth-locked main{ display:initial; }
+    .toc{ display:none; }
+    main{ padding:0; box-shadow:none; }
+    main::before{ display:none; }
+    body{ display:block; }
+    .cover{ display:block !important; page-break-after:always; animation:none; }
+    .recipe{ display:block !important; page-break-after:always; animation:none; }
+    .recipe:last-child{ page-break-after:auto; }
+    .toc-entry{ cursor:default; }
+    .toc-entry, .toc-entry:visited{ color:var(--ink); text-decoration:none; }
+    .page-nav{ display:none; }
+    .back-to-list{ display:none; }
+    .page{ max-width:100%; }
+
+    /* Tighter type + spacing so most recipes fit a single printed page */
+    .recipe{ font-size:0.8em; }
+    .chapter-num{ width:32px; height:32px; font-size:0.8rem; margin-bottom:8px; }
+    .recipe h2{ font-size:1.5rem; margin-bottom:4px; }
+    .prep-time{ font-size:0.7rem; padding:3px 8px; margin-bottom:10px; }
+    .meta-row{ margin-bottom:14px; font-size:0.8rem; }
+    .divider{ margin-bottom:16px; }
+    .cols{ gap:24px; }
+    .block h3{ font-size:0.95rem; margin-bottom:8px; }
+    .ingredients li{ padding:4px 0; font-size:0.82rem; }
+    .steps li{ margin-bottom:8px; padding-right:26px; font-size:0.82rem; line-height:1.4; }
+    .steps li::before{ width:18px; height:18px; font-size:0.65rem; }
+    .notes{ margin-top:16px; padding:10px 14px; }
+    .notes h3{ font-size:0.85rem; margin-bottom:6px; }
+    .notes ul{ font-size:0.76rem; }
+    .cover-title{ font-size:2rem; }
+    .cover-sub{ margin-bottom:24px; }
+    .toc-section{ margin-bottom:18px; }
+    .toc-entry{ padding:6px 2px; font-size:0.85rem; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <h2 class="auth-title">ספר המתכונים</h2>
+      <p class="auth-sub">כניסה לספר המתכונים המשפחתי</p>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTabBtn" onclick="showAuthTab('login')">התחברות</button>
+        <button class="auth-tab" id="signupTabBtn" onclick="showAuthTab('signup')">הרשמה</button>
+      </div>
+      <form class="auth-form active" id="loginForm" onsubmit="return handleLogin(event)">
+        <input type="text" id="loginUsername" placeholder="שם משתמש" autocomplete="username" required>
+        <input type="password" id="loginPassword" placeholder="סיסמה" autocomplete="current-password" required>
+        <button type="submit" class="auth-submit">כניסה</button>
+      </form>
+      <form class="auth-form" id="signupForm" onsubmit="return handleSignup(event)">
+        <input type="text" id="signupUsername" placeholder="בחרו שם משתמש" autocomplete="username" required>
+        <input type="password" id="signupPassword" placeholder="בחרו סיסמה" autocomplete="new-password" required>
+        <button type="submit" class="auth-submit">הרשמה וכניסה</button>
+      </form>
+      <p class="auth-error" id="authError"></p>
+    </div>
+  </div>
+
+  <nav class="toc" aria-label="תוכן עניינים">
+    <button class="toc-brand" onclick="showToc()">
+      <h1>ספר המתכונים</h1>
+      <p class="sub">של עדן</p>
+    </button>
+    <ul class="toc-list" id="tocList"></ul>
+    <div class="toc-footer">
+      <button class="print-btn" onclick="window.print()">🖨️ ייצוא ל-PDF / הדפסה</button>
+      <p class="hint">בהדפסה יופיעו כל המתכונים, כל אחד בעמוד נפרד. בחלון ההדפסה אפשר לבחור "שמור כ-PDF".</p>
+      <p class="user-row"><span id="currentUserLabel"></span> <button class="logout-link" onclick="handleLogout()">התנתקות</button></p>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page" id="pageContent"></div>
+  </main>
+
+<script>
+  const recipes = [
+    {
+      title: "עוגיות שוקולד צ'יפס גדולות",
+      category: "קינוחים",
+      time: "כ-30 דקות",
+      yield: "10-12 עוגיות גדולות (או 20-22 קטנות)",
+      ingredients: [
+        { amt: "100 גרם", name: "חמאה רכה (ר' הערות לגרסה פרווה)" },
+        { amt: "125 גרם (1/2 כוס)", name: "סוכר חום כהה" },
+        { amt: "30 גרם (3 כפות)", name: "סוכר" },
+        { amt: "1/2 כפית", name: "מלח" },
+        { amt: "1 כפית", name: "תמצית וניל" },
+        { amt: "1", name: "ביצה L" },
+        { amt: "1/4 כפית", name: "סודה לשתייה" },
+        { amt: "1/2 כפית", name: "אבקת אפייה" },
+        { amt: "210 גרם (כוס וחצי)", name: "קמח (ר' הערות לגרסה ללא גלוטן)" },
+        { amt: "200 גרם", name: "שוקולד מריר קצוץ או שוקולד צ'יפס" },
+      ],
+      steps: [
+        "מחממים תנור ל-170 מעלות.",
+        "בקערת מיקסר עם וו גיטרה (אפשר גם עם מיקסר ידני חשמלי!) שמים חמאה, סוכר חום כהה, סוכר, מלח ווניל ומערבלים במהירות גבוהה עד שמתקבלת תערובת במרקם קרמי רך.",
+        "מוסיפים ביצה וממשיכים לערבל עד שהיא נטמעת בתערובת.",
+        "מוסיפים סודה, אבקת אפייה וקמח ומערבלים עד שמתקבלים גושי בצק גדולים.",
+        "אם משתמשים בשוקולד צ'יפס – מוסיפים פנימה ומערבלים עד לפיזור אחיד של חתיכות השוקולד בבצק. אם משתמשים בשוקולד רגיל – קוצצים לחתיכות גסות בעזרת סכין. שומרים חלק מהשוקולד בצד.",
+        "יוצרים 10-12 עיגולים מהבצק ומניחים במרווחים על גבי תבנית תנור מרופדת בנייר אפייה. מקשטים את החלק העליון בעוד קצת שוקולד.",
+        "אופים במשך 12-17 דקות או עד שהעוגיות תופחות ומזהיבות. אם מכינים עוגיות קטנות יותר, זמן האפייה מתקצר.",
+        "מצננים מעט בטמפרטורת החדר ומגישים.",
+      ],
+      notes: [
+        "העוגיות נשמרות בצנצנת אטומה עד שבוע.",
+        "אפשר להקפיא את העוגיות עד חודש. מומלץ לחמם אותן קצת לפני ההגשה.",
+        "במקום שוקולד מריר אפשר להשתמש בשוקולד חלב או לבן באותה כמות.",
+        "גרסה ללא גלוטן: משתמשים בקמח תמי או קמח כרגיל באותה כמות במקום הקמח הלבן.",
+        "גרסה פרווה: משתמשים ב-80 גרם שמן קוקוס במקום החמאה. אפשר גם מרגרינה או מחמאה באותה כמות במקום החמאה.",
+      ],
+    },
+    {
+      title: "עוגת תפוזים",
+      category: "קינוחים",
+      time: "כ-50 דקות",
+      yield: "תבנית מלבנית קטנה בגודל 22X31",
+      ingredients: [
+        { amt: "3", name: "ביצים גדולות" },
+        { amt: "3/4 כוס (150 ג')", name: "סוכר" },
+        { amt: "3/4 כוס (180 מ\"ל)", name: "שמן" },
+        { amt: "כוס פחות 2 כפות (220 מ\"ל)", name: "מיץ תפוזים טבעי" },
+        { amt: "כוס וחצי (210 ג')", name: "קמח לבן" },
+        { amt: "כפית וחצי", name: "אבקת אפייה" },
+        { amt: "חבילת (80 ג')", name: "אינסטנט פודינג וניל" },
+        { amt: "חצי כוס (45 ג')", name: "קוקוס" },
+      ],
+      steps: [
+        "מחממים תנור מראש ל-180 מעלות ומשמנים תבנית.",
+        "מערבבים (בעזרת מיקסר או מטרפה ידנית) את הביצים עם הסוכר במשך כחצי דקה. מוסיפים שמן ומיץ ומערבבים.",
+        "בקערית נפרדת מערבבים: קמח, אבקת האפייה, אינסטנט פודינג וקוקוס. מוסיפים לתערובת ומערבבים קלות עד לאיחוד חומרים (שימו לב - ערבוב יתר פוגע באווריריות העוגה).",
+        "מעבירים את התערובת לתבנית משומנת ומכניסים לתנור החם. אופים במשך כ-40 דקות, עד שקיסם יוצא יבש.",
+      ],
+      notes: [],
+    },
+    {
+      title: "אוזני המן מבצק קקאו במילוי נוטלה ושוקולד לבן",
+      category: "קינוחים",
+      time: "כ-35 דקות",
+      yield: "מגש עוגיות",
+      ingredients: [
+        { amt: "200 גרם", name: "חמאה קרה, חתוכה לקוביות (לבצק)" },
+        { amt: "300 גרם (2¼ כוסות)", name: "קמח (לבצק)" },
+        { amt: "60 גרם (חצי כוס)", name: "קקאו (לבצק)" },
+        { amt: "150 גרם (כוס ורבע)", name: "אבקת סוכר (לבצק)" },
+        { amt: "קורט", name: "מלח (לבצק)" },
+        { amt: "2", name: "חלמונים (לבצק)" },
+        { amt: "2 כפות", name: "מים (לבצק)" },
+        { amt: "100 גרם", name: "שוקולד לבן (למילוי)" },
+        { amt: "לפי הצורך", name: "ממרח נוטלה (למילוי)" },
+      ],
+      steps: [
+        "במעבד מזון או בקערת המיקסר עם וו גיטרה מניחים חמאה קרה חתוכה לקוביות, קמח, אבקת סוכר, קקאו ומלח, ומפעילים עד קבלת מרקם פירורי כמו קוסקוס, בלי גושי חמאה. מוסיפים חלמונים ומים ומפעילים שוב עד קבלת בצק עוגיות אחיד - ולא יותר.",
+        "מחלקים את הבצק לשני חלקים. כל חלק מרדדים בין שני ניירות אפייה לעובי של 2.5 מ\"מ ונוקרים עיגולים.",
+        "מניחים במרכז כל עיגול חתיכת שוקולד לבן ומזלפים מעל ממרח נוטלה, מקפלים לצורת אוזן המן ומניחים על מגש עם נייר אפייה.",
+        "מכניסים לתנור שחומם מראש ל-180 מעלות טורבו לכ-14 דקות, מוציאים ומצננים בחוץ.",
+      ],
+      notes: [],
+    },
+    {
+      title: "קראמבל תפוחים",
+      category: "קינוחים",
+      time: "כ-50 דקות",
+      yield: "4 מנות",
+      ingredients: [
+        { amt: "7", name: "תפוחי עץ גרני סמיט בינוניים (לתפוחים)" },
+        { amt: "2 כפות", name: "סוכר חום כהה (לתפוחים)" },
+        { amt: "כפית", name: "קינמון טחון (לתפוחים)" },
+        { amt: "1 כוס", name: "קמח לבן (לקראמבל)" },
+        { amt: "1/2 כוס", name: "סוכר חום כהה (לקראמבל)" },
+        { amt: "100 גרם (חבילה)", name: "חמאה קרה, חתוכה לקוביות (לקראמבל)" },
+        { amt: "קורט", name: "מלח דק (לקראמבל)" },
+        { amt: "להגשה", name: "אבקת סוכר" },
+        { amt: "להגשה", name: "גלידה בטעם וניל" },
+      ],
+      steps: [
+        "מכינים את התפוחים: מקלפים את התפוחים וחותכים לקוביות של כחצי ס\"מ. מעבירים לקערה.",
+        "מוסיפים את הסוכר והקינמון לתפוחים ומערבבים היטב.",
+        "מכינים את הקראמבל: מכניסים לקערת מעבד המזון את הקמח, הסוכר, החמאה והמלח ומערבלים בפולסים קצרים עד ליצירת פירורים גסים.",
+        "מחממים את התנור לחום של 180 מעלות.",
+        "מעבירים את תערובת התפוחים לתבנית ומשטחים מעט.",
+        "מפזרים מעל את הקראמבל בצורה שווה.",
+        "מכניסים לתנור ל-35 דקות.",
+        "מוציאים מהתנור, מפדרים באבקת סוכר ומגישים עם גלידת וניל.",
+      ],
+      notes: [],
+    },
+    {
+      title: "פרגיות לעל האש",
+      category: "מנות עיקריות",
+      time: "כשעתיים (כולל השריה במקרר)",
+      yield: "כ-15 שיפודי עץ/ברזל",
+      ingredients: [
+        { amt: "1 קילו", name: "פרגיות חתוכות לקוביות בגודל ביס" },
+        { amt: "1/4 כוס", name: "מיונז" },
+        { amt: "1/4 כוס", name: "סויה" },
+        { amt: "1/4 כוס", name: "סילאן" },
+        { amt: "3", name: "שיני שום כתושות" },
+        { amt: "כ-1/2 כפית", name: "מלח" },
+        { amt: "כ-1/4 כפית", name: "פלפל שחור" },
+        { amt: "1/2 כף", name: "פפריקה" },
+      ],
+      steps: [
+        "להוסיף את כל מרכיבי הרוטב לפרגיות ולערבב היטב.",
+        "לכסות את הקערה בניילון נצמד ולתת לפרגיות לנוח כשעה במקרר.",
+        "אם משתמשים בשיפודי עץ, כדאי להשרות את השיפודים במים כ-15 דקות.",
+        "לשפד את חתיכות הפרגיות, לשים כ-4 חתיכות פרגית על כל שיפוד.",
+        "לחמם מנגל על אש גבוהה ולשמן היטב את רשת המנגל.",
+        "להניח את שיפודי הפרגית על המנגל ולצלות כ-10-15 דקות מכל צד או עד שהפרגיות משחימות היטב מכל הצדדים (סה\"כ בערך 20-30 דקות).",
+        "להגיש מיד, בתיאבון.",
+      ],
+      notes: [],
+    },
+    {
+      title: "ניוקי עוף בתנור",
+      category: "מנות עיקריות",
+      time: "כשעה ורבע",
+      yield: "כמות למשפחה, לפי חבילת ניוקי של 500 גרם",
+      ingredients: [
+        { amt: "1 חבילה (500 גרם)", name: "ניוקי מיובש בוואקום" },
+        { amt: "3 כרעיים או 6 שוקיים", name: "עוף" },
+        { amt: "1 סלסלה", name: "פטריות" },
+        { amt: "1", name: "בצל גדול, מקולף וחתוך לרצועות" },
+        { amt: "4 כפות", name: "שמן זית" },
+        { amt: "3 כפות", name: "סילאן" },
+        { amt: "2 כפות", name: "אבקת מרק איכותית - פטריות או בצל (אפשר גם לשלב, מומלץ)" },
+        { amt: "2 שיני שום כתושות", name: "או חצי כפית שום גבישי" },
+        { amt: "מעט", name: "אגוז מוסקט מגורד" },
+        { amt: "500 מ\"ל", name: "מים רותחים" },
+        { amt: "לפי הטעם", name: "מלח ופלפל שחור" },
+      ],
+      steps: [
+        "מחממים תנור ל-200 מעלות (עליון תחתון או טורבו).",
+        "מניחים בתבנית את הניוקי, הבצל, הפטריות והעוף.",
+        "בקערה, מערבבים את כל המרכיבים של הרוטב.",
+        "שופכים מעל הכל ומערבבים מעט.",
+        "מכסים עם נייר אפייה ומעליו נייר אלומיניום.",
+        "מכניסים לתנור לאפייה כ-45 דקות.",
+        "לאחר 45 דקות פותחים את התנור, מורידים את הכיסוי וממשיכים לאפות עוד כ-20 דקות או עד הזהבה.",
+      ],
+      notes: [
+        "אם צריך, אפשר להוסיף מעט מים רותחים באמצע האפייה.",
+      ],
+    },
+    {
+      title: "עוף בלימון עם ברוקולי ואורז",
+      category: "מנות עיקריות",
+      time: "כשעה ורבע",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "1 ק\"ג", name: "פרגיות חתוכות לרצועות גדולות" },
+        { amt: "כפית", name: "אבקת סודה לשתייה, להשרייה" },
+        { amt: "כף", name: "סויה כהה" },
+        { amt: "חבילה", name: "ברוקולי קפוא (של סנפרוסט)" },
+        { amt: "2", name: "בצלים סגולים" },
+        { amt: "רבע כוס", name: "שמן" },
+        { amt: "חצי כוס", name: "דבש (לרוטב)" },
+        { amt: "חצי כוס", name: "לימון (לרוטב)" },
+        { amt: "חצי כוס", name: "מים (לרוטב)" },
+        { amt: "כפית גדושה", name: "קורנפלור (לרוטב)" },
+        { amt: "2 כפות", name: "שמן שומשום (לרוטב)" },
+        { amt: "5 שיני שום", name: "כתושות (לרוטב)" },
+        { amt: "כפית וחצי", name: "מלח (לרוטב)" },
+        { amt: "חצי כפית", name: "פלפל שחור גרוס (לרוטב)" },
+        { amt: "2 כפות", name: "שמן (לאורז)" },
+        { amt: "2 כוסות", name: "אורז לבן - חיש או תאילנדי (לאורז)" },
+        { amt: "4 כוסות", name: "מים רותחים (לאורז)" },
+        { amt: "כפית", name: "מלח (לאורז)" },
+      ],
+      steps: [
+        "בקערה מערבבים את הפרגית עם אבקת הסודה לשתייה והסויה, ומשרים בצד למשך 10 דקות. אין צורך לשטוף בסיום ההשרייה.",
+        "במחבת גדולה מחממים את השמן, מטגנים את הבצלים כחמש דקות, מוסיפים את הפרגיות ומטגנים עד להזהבה (לפחות 10 דקות). מוסיפים את הברוקולי פנימה (מומלץ להפשיר אותו לפני השימוש, או לחלוט אותו כדקה במים רותחים) ומערבבים.",
+        "בקערה נפרדת מערבבים את כל חומרי הרוטב ומוזגים מעל הברוקולי והפרגיות.",
+        "מערבבים היטב ומבשלים כעשר דקות מרגע הרתיחה, עד לאיחוד וצמצום הרוטב (מומלץ לכסות במכסה).",
+        "מכבים את האש.",
+        "בסיר מחממים שמן, מטגנים את האורז כשתי דקות, מוסיפים מלח ומים רותחים ומבשלים על אש נמוכה ומכוסה כ-25 דקות עד שהאורז רך.",
+        "מומלץ לאחר כיבוי האש להשאיר את האורז עם המכסה סגור עוד כעשר דקות.",
+      ],
+      notes: [
+        "ניתן לקשט בהגשה עם בצל ירוק קצוץ, פרוסות שקדים או שומשום.",
+      ],
+    },
+    {
+      title: "פסטה היער השחור",
+      category: "מנות עיקריות",
+      time: "כ-40 דקות",
+      yield: "4 סועדים",
+      ingredients: [
+        { amt: "300 גרם", name: "פסטה רדיאטורי שחורה" },
+        { amt: "לפי הצורך", name: "עגבניות שרי" },
+        { amt: "לפי הצורך", name: "בצל סגול" },
+        { amt: "לפי הצורך", name: "פטריות שמפניון" },
+        { amt: "30 גרם", name: "חמאה (לרוטב)" },
+        { amt: "250 מ\"ל", name: "שמנת 38% (לרוטב)" },
+        { amt: "100 גרם", name: "חלב (לרוטב)" },
+        { amt: "5 כפות", name: "רוטב טריאקי, אסם (לרוטב)" },
+        { amt: "לפי הטעם", name: "מלח (לרוטב)" },
+        { amt: "לקישוט", name: "עירית" },
+        { amt: "לקישוט", name: "פרמז'ן" },
+      ],
+      steps: [
+        "מתחילים מהירקות: חותכים את העגבניות השרי לחצי, את הבצל לחצאי עיגול ואת הפטריות לרבעים. מסדרים במגש, מפזרים שמן ומכניסים לתנור ל-10 דקות צלייה באוויר חם ב-200 מעלות (אפשר גם גריל).",
+        "עוברים לרוטב: במחבת שמים חמאה ואת הפטריות הצלויות ומקפיצים דקה-שתיים. לאחר מכן מוסיפים את שאר חומרי הרוטב ומערבבים עד שמסמיך (עד שמעבירים כף ונשאר שובל שלוקח קצת זמן לחזור ולהיסגר).",
+        "מבשלים את הפסטה לפי הוראות היצרן, וכשהיא מוכנה מעבירים אותה לרוטב יחד עם כרבע כוס ממי הבישול. מקפיצים על להבה גבוהה עד שהרוטב עוטף את כל הפסטה.",
+        "מעבירים את הפסטה לצלחת, מסדרים מעליה את הבצל והעגבניות הצלויים. מקשטים בפרמזן מגורד ועירית קצוצה ומגישים.",
+      ],
+      notes: [],
+    },
+    {
+      title: "שניצלים",
+      category: "מנות עיקריות",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "500 גרם", name: "חזה עוף פרוס דק" },
+        { amt: "2", name: "ביצים L (לבלילת הביצים)" },
+        { amt: "כף", name: "קטשופ (לבלילת הביצים)" },
+        { amt: "כף", name: "מיונז (לבלילת הביצים)" },
+        { amt: "כף", name: "חרדל (לבלילת הביצים)" },
+        { amt: "חצי כפית", name: "מלח (לבלילת הביצים)" },
+        { amt: "1 כוס", name: "פירורי לחם לבנים או זהובים (לתערובת הפירורים)" },
+        { amt: "כף", name: "פפריקה אדומה מתוקה (לתערובת הפירורים)" },
+        { amt: "2 כפות", name: "שומשום (לתערובת הפירורים)" },
+        { amt: "כף", name: "פטרוזיליה יבשה (לתערובת הפירורים)" },
+        { amt: "כפית", name: "מלח (לתערובת הפירורים)" },
+        { amt: "אופציונלי", name: "חצי כפית אבקת שום (לתערובת הפירורים)" },
+        { amt: "לפי הצורך", name: "שמן לטיגון עמוק" },
+      ],
+      steps: [],
+      notes: [],
+    },
+    {
+      title: "ניוקי פריזאי",
+      category: "מנות עיקריות",
+      time: "כשעה וחצי",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "100 גרם", name: "חמאה (לבצק)" },
+        { amt: "כפית", name: "חרדל (לבצק)" },
+        { amt: "כפית", name: "מלח (לבצק)" },
+        { amt: "1 כוס", name: "מים (לבצק)" },
+        { amt: "180 גרם", name: "קמח לבן (לבצק)" },
+        { amt: "80 גרם", name: "גבינת פרמז'ן מגוררת (לבצק)" },
+        { amt: "3 ביצים + 1", name: "חלמון (לבצק)" },
+        { amt: "1/2 סלסלה", name: "עגבניות שרי (לרוטב)" },
+        { amt: "3 שיני שום", name: "(לרוטב)" },
+        { amt: "צרור", name: "עלי בזיליקום (לרוטב)" },
+        { amt: "מעט", name: "יין לבן (לרוטב)" },
+        { amt: "100 גרם", name: "חמאה (לרוטב)" },
+      ],
+      steps: [
+        "הכנת הבצק: מחממים בסיר מים, חמאה, חרדל ומלח עד לסף רתיחה.",
+        "מוסיפים את כל כמות הקמח ומערבבים עד שהקמח סופח את כל הנוזלים ומתנתק מקצוות הסיר.",
+        "מעבירים את הבצק למיקסר עם וו גיטרה ומערבבים על מהירות נמוכה עד לצינון.",
+        "כשהבצק מתקרר מוסיפים את גבינת הפרמז'ן והביצים בהדרגה (בהתחלה הבצק לא יקשר לביצה, אך לאחר מספר דקות זה יתערבב).",
+        "הבצק צריך להיות במרקם רך של בצק רבוך; אם יוצא קשה מדי, ניתן להוסיף עוד ביצה.",
+        "מעבירים את הבצק לשק זילוף ושמים בקירור למשך חצי שעה.",
+        "כשהבצק הרבוך מתקרר מעט מזלפים על משטח מקומח רצועות בצק, ובעזרת סכין חותכים לניוקי. מעבירים לכלי מקומח ושומרים בהקפאה עד לשימוש.",
+        "הכנת הרוטב: מחממים מחבת עם שמן זית ומטגנים קלות את השום, מוסיפים את עגבניות השרי ומבשלים למשך 20 דקות על אש נמוכה.",
+        "מוסיפים יין לבן ומועכים מעט את עגבניות השרי, מתבלים ומוסיפים עלי בזיליקום.",
+        "מבשלים את הניוקי במים רותחים כ-3 דקות עד שהם צפים, ומעבירים לרוטב העגבניות.",
+        "מוסיפים חמאה לרוטב ומערבבים ללא הפסקה עד שהחמאה נקשרת עם הרוטב.",
+        "מעבירים לצלחת הגשה, מגרדים מעל פרמזן ותהנו!",
+      ],
+      notes: [],
+    },
+    {
+      title: "נודלס סינטה עם בקר וברוקולי",
+      category: "מנות עיקריות",
+      time: "כ-30 דקות",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "1/2 קילו", name: "בשר בקר לצלייה מהירה, חתוך לרצועות דקות (שייטל/סינטה/אנטריקוט)" },
+        { amt: "3 חבילות קטנות (סה\"כ 600 גרם)", name: "אטריות טריות למוקפץ" },
+        { amt: "כ-4 כוסות", name: "פרחי ברוקולי קטנים" },
+        { amt: "כ-2-3 גבעולים", name: "בצל ירוק קצוץ" },
+        { amt: "3 כפות", name: "שמן" },
+        { amt: "1/2 כוס", name: "מים (לרוטב)" },
+        { amt: "כף", name: "קורנפלור (לרוטב)" },
+        { amt: "כף", name: "רוטב סרירצ'ה או צ'ילי חריף (לרוטב)" },
+        { amt: "3 כפות", name: "סילאן או סוכר חום כהה (לרוטב)" },
+        { amt: "2 כפות", name: "רוטב טריאקי (לרוטב)" },
+        { amt: "1/2 כוס", name: "רוטב סויה (לרוטב)" },
+        { amt: "כף", name: "חומץ אורז - לא חובה (לרוטב)" },
+        { amt: "כפית", name: "שמן שומשום (לרוטב)" },
+        { amt: "4 שיני שום", name: "כתושות (לרוטב)" },
+      ],
+      steps: [
+        "מביאים לרתיחה סיר גדול עם מים. מכבים את האש ומוסיפים את האטריות. משאירים אותן דקה במים ומסננים. שוטפים במים קרים.",
+        "בקערית או בכלי מזיגה מערבבים את המים והקורנפלור עד שאין יותר גושים של קורנפלור.",
+        "מוסיפים את כל מרכיבי הרוטב: סרירצ'ה, סילאן, טריאקי, סויה, חומץ אורז, שמן שומשום ושום כתוש, ומערבבים היטב.",
+        "מחממים על אש גבוהה שמן במחבת גדולה ורחבה, מוסיפים את רצועות הבשר, מפזרים בשכבה אחידה ומטגנים בלי לערבב, עד שמשחים מצד אחד.",
+        "מוסיפים את הברוקולי ומערבבים עם הבשר עד שהבשר משחים מכל הצדדים והברוקולי משנה צבע לירוק בוהק.",
+        "מוסיפים את הרוטב ומבשלים כ-2-3 דקות, או עד שהרוטב רותח ומסמיך.",
+        "מוסיפים את הבצל הירוק והאטריות, מערבבים ומבשלים כדקה. מגישים וזוללים!",
+      ],
+      notes: [],
+    },
+    {
+      title: "סופריטו בשר ותפוחי אדמה",
+      category: "מנות עיקריות",
+      time: "כ-5-6 שעות",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "2 קילו", name: "קוביות בשר אונטריב (מספר 2)" },
+        { amt: "4-5", name: "תפוחי אדמה גדולים, חתוכים לקוביות" },
+        { amt: "4", name: "בצלים לבנים, חתוכים לקוביות" },
+        { amt: "כף", name: "מלח גס לבשר" },
+        { amt: "כפית", name: "פלפל שחור גרוס לבשר" },
+        { amt: "כפית", name: "מלח דק" },
+        { amt: "כפית", name: "פלפל שחור" },
+        { amt: "1/2 כוס", name: "שמן זית" },
+        { amt: "1/2 כוס", name: "שמן קנולה לטיגון תפוחי האדמה" },
+        { amt: "ליטר (כסנטימטר מעל הבשר)", name: "מים" },
+      ],
+      steps: [
+        "בסיר סוטאג רחב צורבים את קוביות הבשר בשמן זית עם מעט מלח גס ופלפל גרוס, עד להשחמה, ומוציאים החוצה.",
+        "מוסיפים פנימה את הבצל ומטגנים עד להזהבה.",
+        "את תפוחי האדמה מטגנים במחבת עם מעט שמן עד שיזהיבו.",
+        "מחזירים את הבשר לסיר, מוסיפים מים ומבשלים שעתיים על אש בינונית עם מכסה סגור.",
+        "מוסיפים את תפוחי האדמה.",
+        "מתבלים במלח ופלפל.",
+        "מכסים, מנמיכים את האש ומבשלים 3-4 שעות על אש קטנה.",
+        "מגישים עם אורז ובתיאבון.",
+      ],
+      notes: [],
+    },
+    {
+      title: "עוף חמוץ מתוק",
+      category: "מנות עיקריות",
+      time: "כ-40 דקות",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "1/2 ק\"ג", name: "פילה עוף" },
+        { amt: "1", name: "פלפל ירוק" },
+        { amt: "1", name: "פלפל צהוב" },
+        { amt: "1", name: "פלפל כתום/אדום" },
+        { amt: "1", name: "פלפל ירוק חריף" },
+        { amt: "2", name: "בצל לבן" },
+        { amt: "צרור", name: "בצל ירוק (שומרים לסוף)" },
+        { amt: "3 כפות", name: "שמן שומשום" },
+        { amt: "1 ליטר", name: "שמן לטיגון" },
+        { amt: "1/2 כוס", name: "קמח לבן (לטמפורה)" },
+        { amt: "1/2 כוס", name: "קורנפלור (לטמפורה)" },
+        { amt: "2/3 כוס", name: "מים קרים (לטמפורה)" },
+        { amt: "שקית", name: "אבקת אפייה (לטמפורה)" },
+        { amt: "כפית", name: "מלח (לטמפורה)" },
+        { amt: "1/3 כוס", name: "סויה (לרוטב)" },
+        { amt: "2 כפות", name: "סוכר חום דביק/סוכר דקלים (לרוטב)" },
+        { amt: "3 כפות", name: "חומץ או מיץ לימון (לרוטב)" },
+        { amt: "3 כפות", name: "רוטב טריאקי (לרוטב)" },
+        { amt: "3 כפות", name: "צ'ילי מתוק (לרוטב)" },
+        { amt: "2 שיני שום", name: "כתושות (לרוטב)" },
+        { amt: "1/3 כוס", name: "מים חמים (לרוטב)" },
+      ],
+      steps: [
+        "בקערה מערבבים את כל מצרכי בלילת הטמפורה.",
+        "חותכים את פילה העוף לקוביות (אפשר גם חזה עוף, אבל הפילה עסיסי הרבה יותר).",
+        "מעבירים את קוביות העוף לבלילת הטמפורה ומערבבים עד שהבלילה מכסה הכל.",
+        "מחממים סיר רחב עם שמן לטיגון. כשהשמן מגיע לרתיחה, מנמיכים לטמפרטורה בינונית.",
+        "מעבירים את קוביות העוף לשמן ומטגנים משני הצדדים עד להזהבה.",
+        "מוציאים את העוף המטוגן לרשת צינון.",
+        "חותכים את הפלפלים הצבעוניים והבצל לקוביות. את הבצל הירוק חותכים לחתיכות גסות, אך שומרים אותו לסוף הטיגון.",
+        "מרוקנים את הסיר משמן הטיגון, שמים בו שמן שומשום ומחממים לטמפרטורה גבוהה.",
+        "מוסיפים לסיר את הפלפלים הצבעוניים והבצל, ונותנים להם להיחרך מספר דקות על טמפרטורה בינונית-גבוהה.",
+        "בינתיים מכינים את הרוטב: בצנצנת מניחים את כל מרכיבי הרוטב, סוגרים ומשקשקים. אם אין צנצנת, מערבבים את כל המצרכים בקערה עם מטרפה.",
+        "מוסיפים לסיר את העוף המטוגן ואת הרוטב, מערבבים וסוגרים מכסה. מבשלים 10 דקות על טמפרטורה בינונית.",
+        "בסיום הבישול מוסיפים את הבצל הירוק, אפשר להוסיף גם שומשום. מוכן!",
+      ],
+      notes: [],
+    },
+    {
+      title: "קוסקוס במיקרוגל",
+      category: "תוספות",
+      time: "כ-20 דקות",
+      yield: "4 כוסות סולת",
+      ingredients: [
+        { amt: "4 כוסות", name: "מים רותחים" },
+        { amt: "1/2 כוס", name: "שמן" },
+        { amt: "כפית", name: "מלח" },
+        { amt: "4 כוסות", name: "סולת" },
+      ],
+      steps: [
+        "בקערה שמתאימה למיקרו שמים מים רותחים, שמן ומלח ומערבבים.",
+        "מוסיפים את הסולת – חשוב לפי הסדר הזה! – ומערבבים היטב.",
+        "מכסים בניילון נצמד (לא צמוד לקוסקוס) ומכניסים למיקרו ל-7 דקות.",
+        "מוציאים מהמיקרו, פותחים עם מזלג עד שהגרגירים מתחילים להיפתח. אל תילחצו אם יש גושים – המגימיקס כבר ידאג להם.",
+        "מחכים כמה דקות שיתקרר מעט, ואז מעבירים למעבד המזון מגימיקס ב-3 נגלות (לא הכול יחד!).",
+        "אחרי כל נגלה מעבירים לקערה גדולה, פותחים עם הידיים ונותנים לקוסקוס להתאוורר.",
+      ],
+      notes: [
+        "כל מיקרו מתנהג אחרת – אם יצא לכם גוש בצק, זה סימן שזה לא עבד טוב. נסו חצי כמות, ועדיין 7 דקות.",
+      ],
+    },
+    {
+      title: "מטבוחה",
+      category: "מנות ראשונות",
+      time: "כ-3 שעות",
+      yield: "צנצנת גדולה",
+      ingredients: [
+        { amt: "2 פחיות", name: "עגבניות מרוסקות" },
+        { amt: "1/4 כוס (אפשר גם קצת יותר)", name: "שמן" },
+        { amt: "20", name: "שיני שום" },
+        { amt: "3-4", name: "פלפלים חריפים (תלוי בחריפות)" },
+        { amt: "2 כפות", name: "סוכר" },
+        { amt: "קורט", name: "מלח" },
+      ],
+      steps: [
+        "למחבת רחבה על חום בינוני מוסיפים את השמן ואז את העגבניות. מוסיפים את השום והפלפלים. מוסיפים קצת מלח ומביאים לבעבוע קל. מבשלים על אש בינונית-נמוכה, מקפידים לערבב כל כמה זמן ולכסות את הסיר. אם מתייבשת או נדבקת באמצע, אפשר להוסיף עוד קצת שמן.",
+        "כשהשום והפלפלים מתרככים, מועכים אותם פנימה. המטבוחה מוכנה בערך אחרי שלוש שעות, כשהיא אדומה וסמיכה כמו ריבה.",
+      ],
+      notes: [],
+    },
+    {
+      title: "כרובית בתנור",
+      category: "מנות ראשונות",
+      time: "כשעה",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "2 שקיות", name: "כרובית קפואה" },
+        { amt: "לפי הצורך", name: "שמן זית" },
+        { amt: "לפי הטעם", name: "סילאן" },
+        { amt: "לפי הטעם", name: "מלח ופלפל" },
+        { amt: "להגשה", name: "טחינה מוכנה" },
+        { amt: "להגשה", name: "שקדים פרוסים" },
+        { amt: "להגשה", name: "פטרוזיליה" },
+      ],
+      steps: [
+        "מניחים את פרחי הכרובית בתבנית שמתאימה לתנור, בשכבה אחת.",
+        "מזלפים מעל מעט שמן זית, סילאן (ככף וחצי), מלח ופלפל.",
+        "מכסים בנייר כסף ומכניסים לתנור שחומם מראש על 180 מעלות לכחצי שעה. מורידים את נייר הכסף ונותנים לכרובית להזהיב יפה על 200 מעלות.",
+        "מוציאים מהתנור ומזלפים מעל טחינה מוכנה (לא טחינה גולמית).",
+        "מקשטים בשקדים פרוסים שנצרבו במחבת חמה בלי שמן לכ-2 דקות להזהבה, ובפטרוזיליה קצוצה.",
+      ],
+      notes: [],
+    },
+    {
+      title: "סנייה חציל",
+      category: "מנות ראשונות",
+      time: "כשעה ורבע",
+      yield: "מנה ראשונה ל-2 סניות (2 חצילים)",
+      ingredients: [
+        { amt: "2", name: "חצילים" },
+        { amt: "200 גרם", name: "בשר טחון" },
+        { amt: "2", name: "בצלי שאלוט" },
+        { amt: "3/4 כפית", name: "פפריקה" },
+        { amt: "1/4 כפית", name: "כמון" },
+        { amt: "לפי הטעם", name: "מלח" },
+        { amt: "להגשה", name: "טחינה גולמית/מתובלת" },
+        { amt: "להגשה", name: "סילאן" },
+        { amt: "40 גרם", name: "צנוברים" },
+        { amt: "להגשה", name: "פלפל צ'ילי" },
+        { amt: "להגשה", name: "כוסברה" },
+        { amt: "להגשה", name: "בצל שאלוט פרוס" },
+      ],
+      steps: [
+        "מניחים על מגש עם נייר אפייה את החצילים ועושים להם מעט חורים עם מזלג. מכניסים לתנור שחומם מראש ל-200 מעלות טורבו לכ-50 דקות.",
+        "בזמן שהחצילים בתנור מכינים את הבשר: במחבת עם מעט שמן מטגנים את בצלי השאלוט הקצוצים, מוסיפים את הבשר והתבלינים ומערבבים עד שהבשר מוכן.",
+        "מוציאים את החצילים מהתנור ומצננים מעט, עוטפים כל חציל בשלמותו בניילון נצמד וממתינים שיתקרר.",
+        "חותכים את החלק העליון של החציל, מוציאים את התכולה בעדינות לצלחת הגשה כך שהקליפה נשארת בתוך הניילון, מעט קורצים את החציל על הצלחת ומשטחים.",
+        "מפזרים מעל החציל מעט מלח, מניחים מעל את הבשר הטחון שהכנו, טחינה, צנוברים, סילאן, בצל שאלוט פרוס, פלפל צ'ילי וכוסברה.",
+      ],
+      notes: [],
+    },
+    {
+      title: "ארנצ'יני",
+      category: "מנות ראשונות",
+      time: "כשעה וחצי (כולל קירור)",
+      yield: "כ-10 כדורי ארנצ'יני",
+      ingredients: [
+        { amt: "50 גרם", name: "חמאה (לריזוטו)" },
+        { amt: "2 שיני שום", name: "כתושות (לריזוטו)" },
+        { amt: "1 כוס", name: "אורז עגול (לריזוטו)" },
+        { amt: "2 כוסות", name: "מים רותחים (לריזוטו)" },
+        { amt: "1½ כפות", name: "רסק עגבניות מרוכז (לריזוטו)" },
+        { amt: "כפית", name: "מלח דק (לריזוטו)" },
+        { amt: "3/4 כוס", name: "גראנה פדנו (לריזוטו)" },
+        { amt: "3/4 כוס", name: "גבינת מוצרלה מגוררת (לריזוטו)" },
+        { amt: "1/2 חבילה", name: "גבינת מוצרלה, חתוכה ל-10 קוביות (למילוי)" },
+        { amt: "1", name: "ביצה M, טרופה (לעיטוף)" },
+        { amt: "1 כוס", name: "פירורי לחם (לעיטוף)" },
+        { amt: "לפי הצורך", name: "שמן קנולה לטיגון עמוק" },
+        { amt: "1 כוס", name: "פאסאטה עגבניות (לרוטב)" },
+        { amt: "חצי כפית", name: "מלח דק (לרוטב)" },
+        { amt: "חצי כפית", name: "פלפל שחור גרוס (לרוטב)" },
+        { amt: "1/4 כפית", name: "אורגנו יבש (לרוטב)" },
+        { amt: "כפית", name: "שמן זית (לרוטב)" },
+      ],
+      steps: [
+        "ממיסים במחבת את החמאה, מוסיפים את השום ומטגנים 2 דקות. מוסיפים את האורז ומערבבים כמה דקות. מוסיפים את המים הרותחים, הרסק והמלח ומביאים לרתיחה. מנמיכים את הלהבה, מכסים ומבשלים 20 דקות. מכבים את הלהבה ומשאירים את המחבת עם מכסה סגור ל-10 דקות נוספות.",
+        "מוסיפים את הגבינות וממיסים אותן תוך כדי ערבוב באורז. מקררים.",
+        "מכדררים את האורז לכדורים, ומכניסים לתוך כל כדור קוביית מוצרלה.",
+        "מחממים סיר עם שמן לטיגון חצי עמוק.",
+        "טובלים את הכדורים בביצה ולאחר מכן בפירורי הלחם, ומטגנים מספר דקות להזהבה יפה.",
+        "מערבבים בקערה את כל מרכיבי הרוטב ומגישים לצד הארנצ'יני.",
+      ],
+      notes: [],
+    },
+    {
+      title: "פיתות ביתיות",
+      category: "לחמים",
+      time: "כ-3 שעות (כולל תפיחה)",
+      yield: "8 פיתות בינוניות (אפשר לחלק לפחות כדורים לפיתות גדולות יותר)",
+      ingredients: [
+        { amt: "ק\"ג", name: "קמח לחם/פיצה" },
+        { amt: "50 גרם", name: "שמרים טריים (או 20 גרם שמרים יבשים)" },
+        { amt: "600 מ\"ל (2½ כוסות)", name: "מים פושרים" },
+        { amt: "1/3 כוס (65 גרם)", name: "סוכר" },
+        { amt: "1/2 כוס (100 גרם)", name: "שמן" },
+        { amt: "1 כף גדושה (27 גרם)", name: "מלח" },
+      ],
+      steps: [
+        "לישה ידנית: מניחים בקערה גדולה את כל המצרכים לפי הסדר (קמח, שמרים, מים, סוכר, שמן, מלח) ולשים כ-10 דקות עד שהחומרים מתאחדים והבצק יוצא דביק. לחלופין, לשים במיקסר עם וו לישה במהירות נמוכה-בינונית, לישה רצופה של 10 דקות.",
+        "מעבירים את הבצק לקערה משומנת קלות, מרססים מעט שמן גם על החלק העליון של הבצק ומכסים את הקערה בניילון נצמד. מניחים מעל גם מגבת ומשאירים בטמפרטורת החדר לתפוח עד הכפלת הנפח – בערך שעה וחצי.",
+        "מחלקים את הבצק ל-8 כדורים (כ-230 גרם כל כדור, אפשר גם לפי העין) – יוצאות פיתות בינוניות.",
+        "מניחים את כדורי הבצק על משטח מקומח, מקמחים גם את חלקם העליון, מכסים במגבת ומניחים להם לנוח 20-30 דקות.",
+        "מרדדים כל כדור בצק לפיתה שמנה – נראה כמו פיתה, רק פחות דק.",
+        "אפשרות אפייה 1 – סיר חשמלי (כמו בסרטון): מחברים לחשמל ונותנים לו להתחמם 5 דקות לפני שמתחילים. מניחים את הסיר על כיריים כבויות – כל החום מגיע מגוף החימום שבמכסה, לא מהכיריים – כדי לא לפגוע במשטח העבודה. מניחים את הפיתה בחלק התחתון של הסיר (ללא גוף חימום), סוגרים את המכסה עם גוף החימום לדקה, פותחים ובודקים שצד אחד מוכן לפי הצבע, הופכים לעוד דקה ומוציאים. עורמים את הפיתות יחד ומכסים במגבת לשמירה על הלחות.",
+        "אפשרות אפייה 2 – תנור ביתי: כ-40 דקות לפני האפייה מניחים תבנית תנור הפוכה (או אבן שמוט/משטח מתכת לאפייה) בשליש האמצעי של התנור, ומחממים על מצב טורבו בטמפרטורה המקסימלית. בעזרת מגש מחליקים את הפיתה על התבנית הרותחת וסוגרים מיד – הפיתה מוכנה תוך דקות.",
+        "אפשרות אפייה 3 – טאבון: אופים על 350-400 מעלות, אין צורך להפוך את הפיתה בזמן האפייה.",
+      ],
+      notes: [],
+    },
+    {
+      title: "לחמניות אצבע",
+      category: "לחמים",
+      time: "כ-2.5 שעות (כולל תפיחה)",
+      yield: "12 לחמניות (כ-65 גרם כל אחת)",
+      ingredients: [
+        { amt: "500 גרם", name: "קמח לבן מנופה" },
+        { amt: "10 גרם (כף בערך)", name: "שמרים יבשים" },
+        { amt: "4 גרם (בערך כפית שטוחה)", name: "מלח" },
+        { amt: "50 גרם", name: "סוכר" },
+        { amt: "1", name: "ביצה" },
+        { amt: "50 מ\"ל", name: "שמן" },
+        { amt: "240 מ\"ל", name: "מים פושרים" },
+        { amt: "למריחה", name: "ביצה עם טיפת מלח וטיפת מים" },
+      ],
+      steps: [
+        "במיקסר שמים את כל היבשים כולל המלח ומערבבים מעט.",
+        "מוסיפים את הביצה והשמן ומפעילים במיקסר בדרגה 3-4.",
+        "מוסיפים את המים לאט לאט ולשים כ-10 דקות עד שנוצר בצק חלק ולא דביק.",
+        "בקערה משומנת מעט שמים את הבצק להתפחה של שעה וחצי בערך.",
+        "לאחר מכן מחלקים ל-12 חלקים שווים, כ-65 גרם כל כדור. מכדררים לכדורים ומכסים למנוחה של עוד 5-10 דקות.",
+        "לוקחים כל כדור ופותחים לרצועה משני הצדדים על משטח מקומח, מגלגלים ללחמנייה ומהדקים מעט את הקצוות.",
+        "שמים על מגש עם נייר אפייה כאשר הלחמניות ברווח של כחצי סנטימטר ביניהן, מרססים מעט שמן ומכסים להתפחה נוספת של 30 דקות.",
+        "לאחר מכן מורחים את הביצה הטרופה עם המלח והמים.",
+        "מכניסים לתנור ב-180 מעלות לכ-18 דקות או עד שמזהיב. בתיאבון!",
+      ],
+      notes: [],
+    },
+    {
+      title: "חלה לשבת",
+      category: "לחמים",
+      time: "כ-6 שעות (כולל תפיחה)",
+      yield: "כ-16 כדורי בצק (110 גרם כל אחד)",
+      ingredients: [
+        { amt: "1 ק\"ג", name: "קמח לחם/קמח לבן" },
+        { amt: "400 גרם/מ\"ל", name: "מים" },
+        { amt: "2", name: "ביצים L" },
+        { amt: "חצי כוס (100 גרם)", name: "שמן" },
+        { amt: "1/3 כוס + כף (80 גרם)", name: "סוכר" },
+        { amt: "כף (10 גרם)", name: "שמרים יבשים" },
+        { amt: "כף גדושה (20 גרם)", name: "מלח" },
+        { amt: "1", name: "ביצה (להברשה)" },
+        { amt: "2 כפות", name: "מים (להברשה)" },
+        { amt: "כפית", name: "סוכר (להברשה)" },
+        { amt: "כפית", name: "מלח (להברשה)" },
+      ],
+      steps: [
+        "בקערת מיקסר עם וו לישה מניחים את כל מרכיבי הבצק יחד, ומפעילים לישה במהירות נמוכה למשך 12 דקות, עד לקבלת בצק אחיד ומעט דביק.",
+        "מעבירים את הבצק לקערה משומנת ועוטפים בניילון נצמד. אפשר להתפיח בהתפחת לילה במקרר (עד 12 שעות), או בטמפרטורת החדר למשך שעה וחצי (לא באזור עם שמש ישירה).",
+        "לאחר ההתפחה מחלקים את הבצק לכדורים (למשל כדורים של 110 גרם - יוצאים כ-16 כדורים), מניחים על משטח מקומח או משומן ומכסים במגבת למנוחה של 20 דקות.",
+        "מרססים ספריי שמן על משטח העבודה (עדיף מקימוח). מרדדים כל כדור לעלה, מגלגלים לרצועה, וקולעים את החלות מהרצועות (למשל 4 או 5 רצועות לכל חלה).",
+        "מניחים את החלות על מגש עם נייר אפייה, מכסים במגבת דקה או ביריעת ניילון (מבלי למחוץ) ומתפיחים כשעתיים, עד שהחלות מלאות אוויר ורוטטות.",
+        "מחממים תנור ל-200 מעלות טורבו.",
+        "מערבבים את מרכיבי ההברשה (ביצה, מים, מלח וסוכר) ומברישים את החלות. מקשטים בשומשום, גרעינים או פרג לפי הרצון.",
+        "אופים כ-20-25 דקות (פחות אם מכינים לחמניות), עד שהחלות שחומות גם מלמעלה וגם מלמטה.",
+      ],
+      notes: [
+        "ניתן להקפיא את החלות לאחר האפייה: מצננים מעט, עוטפים היטב בניילון נצמד ומקפיאים. מוציאים לילה לפני האכילה ונותנים להפשיר בטמפרטורת החדר, ומחממים מעט לפני ההגשה.",
+        "לגרסה טבעונית: מחליפים את הביצים במים (כל ביצה = 60 מ\"ל מים; עבור 2 ביצים הסה\"כ הוא 120 מ\"ל מים).",
+      ],
+    },
+    {
+      title: "עוגת שוקולד כשרה לפסח",
+      category: "כשר לפסח",
+      time: "כ-3 שעות (כולל צינון)",
+      yield: "תבנית עגולה בקוטר 22 ס\"מ",
+      ingredients: [
+        { amt: "6", name: "ביצים L" },
+        { amt: "1 כוס", name: "סוכר" },
+        { amt: "300 גרם (3 טבלאות)", name: "שוקולד מריר (למי שלא אוכל קטניות - של כרמית ללא קטניות)" },
+        { amt: "200 גרם", name: "תחליף חמאה - נטורינה/מרגרינה/מחמאה (למי שלא אוכל קטניות - 180 גרם שמן קוקוס)" },
+        { amt: "70 גרם (2/3 כוס)", name: "קמח שקדים/שקדים טחונים" },
+        { amt: "100 גרם (חבילה אחת)", name: "שוקולד מריר לגנאש" },
+        { amt: "100 מ\"ל", name: "קרם קוקוס/שמנת צמחית/חלב צמחי לגנאש" },
+      ],
+      steps: [
+        "בקערת מיקסר נקייה ויבשה עם בלון הקצפה מניחים ביצים שלמות וסוכר.",
+        "מקציפים על מהירות גבוהה למשך 8 דקות – שימו לב שצריכה להתקבל קצפה תפוחה מאוד וכמעט לבנה.",
+        "במקביל ממיסים על הגז/במיקרו בקערה חסינת חום את השוקולד יחד עם תחליף החמאה, עד קבלת מרקם חלק כמו גנאש.",
+        "לאחר 8 דקות הקצפה של הביצים והסוכר במיקסר, מורידים את מהירות ההקצפה למהירות נמוכה ומוסיפים את השוקולד המומס ואת קמח השקדים.",
+        "מערבבים בעדינות מלמטה למעלה בעזרת לקקן גדול או מטרפה גדולה. שימו לב שהשוקולד שוקע למטה, אז מערבבים ממש מלמטה.",
+        "מחממים תנור ל-170 מעלות, חום עליון תחתון.",
+        "יוצקים את בלילת העוגה לתבנית עגולה בקוטר 20-22 ס\"מ, או מרובעת 20×20.",
+        "משמנים מעט את התבנית בספריי שמן ומכניסים לאפייה של 40 דקות. העוגה צריכה לצאת מעט רוטטת במרכז. לעוגה להריוניות מומלץ לאפות 45-50 דקות, ולהשגיח שלא תתייבש.",
+        "מוציאים את העוגה ונותנים לה להצטנן לפחות שעתיים בטמפרטורת החדר לפני שפורסים אותה - היא גם טעימה מאוד אחרי קירור מלא. אפשר להקפיא אותה לשעה כדי לחלץ אותה מהתבנית בקלות.",
+        "במידה ומכינים גנאש: ממיסים את חומרי הגנאש בקערה חסינת חום במיקרוגל או בקלחת על הגז. יוצקים את הגנאש על העוגה רק לאחר צינון מלא שלה.",
+      ],
+      notes: [
+        "אפשר לוותר על הגנאש - העוגה טעימה מאוד גם נקייה.",
+      ],
+    },
+    {
+      title: "קיש בטטה ובצל מקורמל",
+      category: "מאפים מלוחים",
+      time: "כשעה ורבע",
+      yield: "תבנית קיש אחת",
+      ingredients: [
+        { amt: "270 גרם (כוס + 4 כפות)", name: "קמח (לבצק)" },
+        { amt: "8 גרם", name: "מלח (לבצק)" },
+        { amt: "180 גרם", name: "חמאה (לבצק)" },
+        { amt: "25 גרם", name: "מים (לבצק)" },
+        { amt: "2", name: "בטטות (למלית)" },
+        { amt: "4", name: "בצלים (למלית)" },
+        { amt: "25 גרם", name: "חמאה (למלית)" },
+        { amt: "2", name: "ביצים (למלית)" },
+        { amt: "250 מ\"ל", name: "שמנת 38% להקצפה (למלית)" },
+        { amt: "150 גרם", name: "גבינת קוואטרו פורמאג'י (למלית)" },
+        { amt: "לפי הטעם", name: "מלח ופלפל (למלית)" },
+      ],
+      steps: [
+        "מתחילים בבצק: במיקסר שמים קמח, חמאה חתוכה לקוביות ומלח, מפעילים עד לקבלת פירורים דקים. מוסיפים מים ומפעילים עד לקבלת בצק חלק ואחיד.",
+        "את הבצק מרדדים בין שני ניירות אפייה לעובי של 2 מ\"מ ומכניסים להקפאה ל-10 דקות.",
+        "מוציאים את הבצק ומחלצים מנייר האפייה, חותכים לפי גודל התבנית ומסדרים בתוך התבנית. חותכים את יתרת הבצק שנשארה בשוליים ושומרים במקפיא עד שהמלית מוכנה.",
+        "למלית: חותכים את הבצלים לרצועות ומטגנים לאט עם חמאה עד שהבצל משחים ומתקרמל.",
+        "בקערה נפרדת מערבבים ביצים עם שמנת, מוסיפים את הבצל המקורמל, גבינת קוואטרו פורמאג'י, מלח ופלפל.",
+        "יוצקים 2/3 מהבלילה לבסיס הקיש שהכנו, מסדרים שכבה של בטטות פרוסות דק אחת ליד השנייה, ומעליה יוצקים את יתרת הבלילה. מסדרים שכבה נוספת של בטטות פרוסות דק, מסודרות זו ליד זו.",
+        "מכניסים לתנור שחומם מראש ל-180 מעלות טורבו לכ-35-40 דקות. מוציאים ומצננים מעט לפני שחותכים.",
+      ],
+      notes: [],
+    },
+    {
+      title: "מרק כתום",
+      category: "מרקים",
+      time: "כ-40 דקות",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "2 כפות", name: "שמן זית" },
+        { amt: "5 שיני שום", name: "קלופות, שלמות" },
+        { amt: "2", name: "בטטות בינוניות, קלופות וחתוכות גס" },
+        { amt: "1", name: "בצל גדול, קלוף וחתוך גס" },
+        { amt: "200 גרם", name: "דלעת, קלופה וחתוכה גס" },
+        { amt: "כפית", name: "מלח דק" },
+        { amt: "קורט", name: "פלפל שחור גרוס" },
+        { amt: "1/2 כוס", name: "שמנת לבישול 15% (או חלב קוקוס או שמנת צמחית-סויה לבישול)" },
+        { amt: "להגשה", name: "שמנת לבישול 15% - כמה שליכטות לכל קערה" },
+        { amt: "להגשה", name: "קרוטונים" },
+        { amt: "להגשה", name: "כוסברה" },
+        { amt: "להגשה", name: "פלפל צ'ילי אדום" },
+      ],
+      steps: [
+        "מחממים סיר מרק עם שמן זית, ומכניסים לאידוי קל את הירקות לפי הסדר הכתוב.",
+        "מוסיפים מלח ומערבבים קלות.",
+        "מוסיפים מים עד גובה הירקות - שימו לב לא לשים יותר מדי מים, כדי שהמרק לא יצא דליל. רוצים מרק סמיך ועשיר.",
+        "מבשלים עם מכסה עד שהירקות מתרככים, טוחנים בבלנדר מוט וטועמים את התיבול. אם צריך מוסיפים עוד מלח ומעט פלפל שחור.",
+        "מוסיפים חצי כוס שמנת לבישול/חלב קוקוס/מוצר סויה לבישול (פרווה) ומערבבים.",
+        "לפני ההגשה מוסיפים שליכטה מהשמנת, קרוטונים, כוסברה ופלפל חריף למי שאוהב.",
+      ],
+      notes: [
+        "קרוטונים תוצרת בית: חותכים לחם/חלה/באגט לקוביות, מתבלים במלח, שמן זית ושן שום כתושה. מפזרים על תבנית תנור מרופדת בנייר אפייה ואופים ב-200 מעלות עד שמתקשים ומשחימים.",
+      ],
+    },
+
+  ];
+
+  let current = 'toc';
+
+  function pad(n){ return String(n+1).padStart(2,'0'); }
+
+  function groupByCategory(){
+    const groups = {};
+    recipes.forEach((r,i) => {
+      const cat = r.category || 'שונות';
+      if(!groups[cat]) groups[cat] = [];
+      groups[cat].push(i);
+    });
+    return groups;
+  }
+
+  function renderToc(){
+    const list = document.getElementById('tocList');
+    const groups = groupByCategory();
+    list.innerHTML = Object.keys(groups).map(cat => `
+      <p class="toc-category">${cat}</p>
+      ${groups[cat].map(i => `
+        <li>
+          <button class="toc-item ${i===current?'active':''}" onclick="showRecipe(${i})">
+            <span class="toc-num">${pad(i)}</span>
+            <span>${recipes[i].title}</span>
+          </button>
+        </li>
+      `).join('')}
+    `).join('');
+  }
+
+  function renderCover(){
+    const groups = groupByCategory();
+    return `
+      <section class="cover ${current==='toc'?'active':''}">
+        <h2 class="cover-title">ספר המתכונים</h2>
+        <p class="cover-sub">של עדן — תוכן העניינים</p>
+        ${Object.keys(groups).map(cat => `
+          <div class="toc-section">
+            <h3>${cat}</h3>
+            <ul class="toc-entries">
+              ${groups[cat].map(i => `
+                <li>
+                  <a class="toc-entry" href="#recipe-${i}" onclick="showRecipe(${i}); return false;">
+                    <span class="e-num">${pad(i)}</span>
+                    <span class="e-title">${recipes[i].title}</span>
+                    <span class="e-leader"></span>
+                  </a>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `).join('')}
+      </section>
+    `;
+  }
+
+  function renderPage(){
+    const container = document.getElementById('pageContent');
+    container.innerHTML = renderCover() + recipes.map((r,i) => `
+      <article class="recipe ${i===current?'active':''}" data-index="${i}" id="recipe-${i}">
+        <button class="back-to-list" onclick="showToc()">→ חזרה לתוכן העניינים</button>
+        <div class="chapter-num">${pad(i)}</div>
+        <h2>${r.title}</h2>
+        ${r.time ? `<p class="prep-time">⏱ זמן הכנה כולל: ${r.time}</p>` : ''}
+        <div class="meta-row">
+          <span>🍽️ ${r.yield}</span>
+        </div>
+        <hr class="divider">
+        <div class="cols ${r.steps && r.steps.length ? '' : 'single'}">
+          <div class="block">
+            <h3>מצרכים</h3>
+            <ul class="ingredients">
+              ${r.ingredients.map(ing => `<li><span class="amt">${ing.amt}</span><span>${ing.name}</span></li>`).join('')}
+            </ul>
+          </div>
+          ${r.steps && r.steps.length ? `
+          <div class="block">
+            <h3>אופן ההכנה</h3>
+            <ol class="steps">
+              ${r.steps.map(s => `<li>${s}</li>`).join('')}
+            </ol>
+          </div>` : ''}
+        </div>
+        ${r.notes && r.notes.length ? `
+          <div class="notes">
+            <h3>הערות, הארות ותוספות</h3>
+            <ul>${r.notes.map(n => `<li>${n}</li>`).join('')}</ul>
+          </div>` : ''}
+        <div class="page-nav">
+          <button onclick="showRecipe(${i-1})" ${i===0?'disabled':''}>→ הקודם</button>
+          <button onclick="showRecipe(${i+1})" ${i===recipes.length-1?'disabled':''}>הבא ←</button>
+        </div>
+      </article>
+    `).join('');
+  }
+
+  function showRecipe(i){
+    if(i < 0 || i >= recipes.length) return;
+    current = i;
+    renderToc();
+    renderPage();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function showToc(){
+    current = 'toc';
+    renderToc();
+    renderPage();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  /* ---------- Simple login / signup (no server - stored in this browser only) ---------- */
+  const AUTH_USERS_KEY = 'recipebook_users';
+  const AUTH_CURRENT_KEY = 'recipebook_currentUser';
+
+  function loadUsers(){
+    try{
+      const raw = localStorage.getItem(AUTH_USERS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+
+  function saveUsers(users){
+    try{ localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users)); }catch(e){}
+  }
+
+  function showAuthTab(tab){
+    document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+    document.getElementById('signupForm').classList.toggle('active', tab === 'signup');
+    document.getElementById('loginTabBtn').classList.toggle('active', tab === 'login');
+    document.getElementById('signupTabBtn').classList.toggle('active', tab === 'signup');
+    document.getElementById('authError').textContent = '';
+  }
+
+  function handleSignup(e){
+    e.preventDefault();
+    const username = document.getElementById('signupUsername').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const errorEl = document.getElementById('authError');
+    if(!username || !password){
+      errorEl.textContent = 'צריך למלא שם משתמש וסיסמה';
+      return false;
+    }
+    const users = loadUsers();
+    if(users[username]){
+      errorEl.textContent = 'שם המשתמש הזה כבר קיים - אפשר להתחבר איתו';
+      return false;
+    }
+    users[username] = password;
+    saveUsers(users);
+    try{ localStorage.setItem(AUTH_CURRENT_KEY, username); }catch(e){}
+    checkAuth();
+    return false;
+  }
+
+  function handleLogin(e){
+    e.preventDefault();
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('authError');
+    const users = loadUsers();
+    if(!users[username] || users[username] !== password){
+      errorEl.textContent = 'שם משתמש או סיסמה שגויים';
+      return false;
+    }
+    try{ localStorage.setItem(AUTH_CURRENT_KEY, username); }catch(e){}
+    checkAuth();
+    return false;
+  }
+
+  function handleLogout(){
+    try{ localStorage.removeItem(AUTH_CURRENT_KEY); }catch(e){}
+    checkAuth();
+  }
+
+  function checkAuth(){
+    const overlay = document.getElementById('authOverlay');
+    let current = null;
+    try{ current = localStorage.getItem(AUTH_CURRENT_KEY); }
+    catch(e){
+      // Storage blocked (e.g. sandboxed preview) - don't lock the person out, just skip the gate.
+      document.body.classList.remove('auth-locked');
+      overlay.style.display = 'none';
+      return;
+    }
+    if(current){
+      document.body.classList.remove('auth-locked');
+      overlay.style.display = 'none';
+      document.getElementById('currentUserLabel').textContent = 'שלום, ' + current;
+    } else {
+      document.body.classList.add('auth-locked');
+      overlay.style.display = 'flex';
+    }
+  }
+
+  checkAuth();
+  renderToc();
+  renderPage();
+</script>
+
+</body>
+</html>
