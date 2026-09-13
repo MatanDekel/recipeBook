@@ -467,6 +467,20 @@
   .page-nav button:hover:not(:disabled){ color:var(--accent-deep); }
   .page-nav button:disabled{ opacity:0.25; cursor:default; }
 
+  /* ---------- Tablet (e.g. iPad) - narrower sidebar, tighter spacing, keeps side-by-side layout ---------- */
+  @media (max-width: 1024px){
+    .toc{ width:230px; min-width:230px; padding:28px 18px; }
+    .scroll-area{ padding:40px 32px 24px; }
+    .page-nav{ padding:14px 32px; }
+    .recipe h2{ font-size:2.1rem; }
+  }
+
+  /* Single-column layout for ingredients/steps once the content column gets narrow
+     (iPad portrait and below) - independent of the full mobile stacking breakpoint. */
+  @media (max-width: 900px){
+    .cols{ grid-template-columns:1fr; gap:28px; }
+  }
+
   @media (max-width: 760px){
     body{ flex-direction:column; height:auto; }
     .toc{ width:100%; min-width:0; height:auto; position:relative; padding:24px; }
@@ -1496,7 +1510,8 @@
   function scrollContentToTop(){
     const area = document.querySelector('.scroll-area');
     if(area) area.scrollTo({top:0, behavior:'smooth'});
-    window.scrollTo({top:0, behavior:'smooth'});
+    const mainEl = document.querySelector('main');
+    if(mainEl) mainEl.scrollIntoView({top:0, behavior:'smooth', block:'start'});
   }
 
   function showRecipe(i){
