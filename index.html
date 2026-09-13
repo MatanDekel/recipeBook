@@ -657,19 +657,9 @@
     <div class="auth-card">
       <h2 class="auth-title">ספר המתכונים</h2>
       <p class="auth-sub">כניסה לספר המתכונים המשפחתי</p>
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="loginTabBtn" onclick="showAuthTab('login')">התחברות</button>
-        <button class="auth-tab" id="signupTabBtn" onclick="showAuthTab('signup')">הרשמה</button>
-      </div>
-      <form class="auth-form active" id="loginForm" onsubmit="return handleLogin(event)">
-        <input type="text" id="loginUsername" placeholder="שם משתמש" autocomplete="username" required>
-        <input type="password" id="loginPassword" placeholder="סיסמה" autocomplete="current-password" required>
+      <form class="auth-form active" id="codeForm" onsubmit="return handleCodeSubmit(event)">
+        <input type="password" id="accessCode" placeholder="קוד כניסה" inputmode="numeric" autocomplete="off" required>
         <button type="submit" class="auth-submit">כניסה</button>
-      </form>
-      <form class="auth-form" id="signupForm" onsubmit="return handleSignup(event)">
-        <input type="text" id="signupUsername" placeholder="בחרו שם משתמש" autocomplete="username" required>
-        <input type="password" id="signupPassword" placeholder="בחרו סיסמה" autocomplete="new-password" required>
-        <button type="submit" class="auth-submit">הרשמה וכניסה</button>
       </form>
       <p class="auth-error" id="authError"></p>
     </div>
@@ -684,7 +674,7 @@
     <div class="toc-footer">
       <button class="print-btn" onclick="window.print()">🖨️ ייצוא ל-PDF / הדפסה</button>
       <p class="hint">בהדפסה יופיעו כל המתכונים, כל אחד בעמוד נפרד. בחלון ההדפסה אפשר לבחור "שמור כ-PDF".</p>
-      <p class="user-row"><span id="currentUserLabel"></span> <button class="logout-link" onclick="handleLogout()">התנתקות</button></p>
+      <p class="user-row"><button class="logout-link" onclick="handleLogout()">נעילה מחדש</button></p>
     </div>
   </nav>
 
@@ -1503,13 +1493,19 @@
     `;
   }
 
+  function scrollContentToTop(){
+    const area = document.querySelector('.scroll-area');
+    if(area) area.scrollTo({top:0, behavior:'smooth'});
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
   function showRecipe(i){
     if(i < 0 || i >= recipes.length) return;
     current = i;
     renderToc();
     renderPage();
     renderPageNav();
-    document.querySelector('.scroll-area').scrollTo({top:0, behavior:'smooth'});
+    scrollContentToTop();
   }
 
   function showToc(){
@@ -1517,87 +1513,44 @@
     renderToc();
     renderPage();
     renderPageNav();
-    document.querySelector('.scroll-area').scrollTo({top:0, behavior:'smooth'});
+    scrollContentToTop();
   }
 
-  /* ---------- Simple login / signup (no server - stored in this browser only) ---------- */
-  const AUTH_USERS_KEY = 'recipebook_users';
-  const AUTH_CURRENT_KEY = 'recipebook_currentUser';
+  /* ---------- Simple passcode gate (no accounts - just a shared code, stored in this browser only) ---------- */
+  const ACCESS_CODE = '1234';
+  const AUTH_UNLOCK_KEY = 'recipebook_unlocked';
 
-  function loadUsers(){
-    try{
-      const raw = localStorage.getItem(AUTH_USERS_KEY);
-      return raw ? JSON.parse(raw) : {};
-    }catch(e){ return {}; }
-  }
-
-  function saveUsers(users){
-    try{ localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users)); }catch(e){}
-  }
-
-  function showAuthTab(tab){
-    document.getElementById('loginForm').classList.toggle('active', tab === 'login');
-    document.getElementById('signupForm').classList.toggle('active', tab === 'signup');
-    document.getElementById('loginTabBtn').classList.toggle('active', tab === 'login');
-    document.getElementById('signupTabBtn').classList.toggle('active', tab === 'signup');
-    document.getElementById('authError').textContent = '';
-  }
-
-  function handleSignup(e){
+  function handleCodeSubmit(e){
     e.preventDefault();
-    const username = document.getElementById('signupUsername').value.trim();
-    const password = document.getElementById('signupPassword').value;
+    const code = document.getElementById('accessCode').value.trim();
     const errorEl = document.getElementById('authError');
-    if(!username || !password){
-      errorEl.textContent = 'צריך למלא שם משתמש וסיסמה';
+    if(code !== ACCESS_CODE){
+      errorEl.textContent = 'קוד שגוי, נסו שוב';
       return false;
     }
-    const users = loadUsers();
-    if(users[username]){
-      errorEl.textContent = 'שם המשתמש הזה כבר קיים - אפשר להתחבר איתו';
-      return false;
-    }
-    users[username] = password;
-    saveUsers(users);
-    try{ localStorage.setItem(AUTH_CURRENT_KEY, username); }catch(e){}
-    checkAuth();
-    return false;
-  }
-
-  function handleLogin(e){
-    e.preventDefault();
-    const username = document.getElementById('loginUsername').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    const errorEl = document.getElementById('authError');
-    const users = loadUsers();
-    if(!users[username] || users[username] !== password){
-      errorEl.textContent = 'שם משתמש או סיסמה שגויים';
-      return false;
-    }
-    try{ localStorage.setItem(AUTH_CURRENT_KEY, username); }catch(e){}
+    try{ localStorage.setItem(AUTH_UNLOCK_KEY, '1'); }catch(e){}
     checkAuth();
     return false;
   }
 
   function handleLogout(){
-    try{ localStorage.removeItem(AUTH_CURRENT_KEY); }catch(e){}
+    try{ localStorage.removeItem(AUTH_UNLOCK_KEY); }catch(e){}
     checkAuth();
   }
 
   function checkAuth(){
     const overlay = document.getElementById('authOverlay');
-    let current = null;
-    try{ current = localStorage.getItem(AUTH_CURRENT_KEY); }
+    let unlocked = false;
+    try{ unlocked = localStorage.getItem(AUTH_UNLOCK_KEY) === '1'; }
     catch(e){
       // Storage blocked (e.g. sandboxed preview) - don't lock the person out, just skip the gate.
       document.body.classList.remove('auth-locked');
       overlay.style.display = 'none';
       return;
     }
-    if(current){
+    if(unlocked){
       document.body.classList.remove('auth-locked');
       overlay.style.display = 'none';
-      document.getElementById('currentUserLabel').textContent = 'שלום, ' + current;
     } else {
       document.body.classList.add('auth-locked');
       overlay.style.display = 'flex';
