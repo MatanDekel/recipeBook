@@ -96,7 +96,7 @@
   .toc-item{
     display:flex;
     align-items:center;
-    gap:12px;
+    gap:10px;
     width:100%;
     background:none;
     border:none;
@@ -266,6 +266,36 @@
   }
 
   .toc-entry .e-title{ flex-shrink:0; }
+
+  .select-check{
+    width:17px;
+    height:17px;
+    accent-color:var(--accent);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+
+  .cover-hint{
+    font-size:0.8rem;
+    color:var(--sage);
+    margin:-30px 0 32px;
+  }
+
+  .finish-select-btn{
+    display:block;
+    margin:18px 0 24px;
+    background:var(--sage);
+    color:var(--paper);
+    border:none;
+    padding:12px 24px;
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-weight:600;
+    font-size:0.9rem;
+    cursor:pointer;
+    transition:background 0.2s ease;
+  }
+  .finish-select-btn:hover{ background:#65735a; }
 
   .chapter-num{
     display:inline-flex;
@@ -625,6 +655,168 @@
   }
   .logout-link:hover{ color:var(--paper); }
 
+  /* ---------- Shopping list ---------- */
+  .shopping-fab{
+    position:fixed;
+    left:24px;
+    bottom:24px;
+    z-index:500;
+    background:var(--accent);
+    color:var(--paper);
+    border:none;
+    border-radius:999px;
+    padding:14px 22px;
+    font-family:'Assistant', sans-serif;
+    font-weight:600;
+    font-size:0.92rem;
+    box-shadow:0 8px 24px rgba(58,46,39,0.35);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:background 0.2s ease, transform 0.15s ease;
+  }
+  .shopping-fab:hover{ background:var(--accent-deep); transform:translateY(-2px); }
+
+  .shopping-page{ display:none; animation: pageIn 0.35s ease; }
+  .shopping-page.active{ display:block; }
+
+  .shopping-page h2{
+    font-family:'Frank Ruhl Libre', serif;
+    font-size:2.4rem;
+    font-weight:700;
+    margin:0 0 24px;
+    color:var(--accent-deep);
+  }
+
+  .shopping-empty{
+    color:var(--ink-soft);
+    font-size:0.95rem;
+    padding:12px 0;
+  }
+
+  .shopping-toggle{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+  }
+
+  .shopping-toggle button{
+    background:var(--paper-deep);
+    border:1px solid var(--tan);
+    color:var(--ink-soft);
+    font-family:'Assistant', sans-serif;
+    font-size:0.82rem;
+    padding:7px 14px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:background 0.2s ease, color 0.2s ease;
+  }
+  .shopping-toggle button.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:var(--paper);
+    font-weight:600;
+  }
+
+  .shopping-owned-hint{
+    font-size:0.8rem;
+    color:var(--sage);
+    margin:0 0 14px;
+  }
+
+  .shopping-checklist{
+    border:1px solid var(--tan);
+    border-radius:8px;
+    padding:6px 16px;
+    margin-bottom:20px;
+    max-height:340px;
+    overflow-y:auto;
+    background:var(--paper);
+  }
+
+  .shopping-group-title{
+    font-family:'Frank Ruhl Libre', serif;
+    font-size:0.95rem;
+    font-weight:700;
+    color:var(--accent-deep);
+    margin:14px 0 4px;
+  }
+  .shopping-group-title:first-child{ margin-top:12px; }
+
+  .shopping-line{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 4px;
+    border-bottom:1px solid var(--paper-deep);
+    font-size:0.92rem;
+    line-height:1.5;
+    cursor:pointer;
+  }
+  .shopping-line:last-child{ border-bottom:none; }
+  .shopping-line input{ accent-color:var(--sage); flex-shrink:0; width:18px; height:18px; }
+  .shopping-line.owned span{
+    text-decoration:line-through;
+    text-decoration-color:var(--accent-deep);
+    text-decoration-thickness:2px;
+    color:var(--ink-soft);
+  }
+
+  .shopping-copy-label{
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    margin:0 0 8px;
+  }
+
+  .shopping-text{
+    width:100%;
+    min-height:360px;
+    border:1px solid var(--tan);
+    border-radius:8px;
+    padding:18px;
+    font-family:'Assistant', sans-serif;
+    font-size:0.92rem;
+    line-height:1.75;
+    resize:vertical;
+    background:var(--paper-deep);
+    color:var(--ink);
+    white-space:pre-wrap;
+  }
+
+  .shopping-actions{
+    display:flex;
+    gap:10px;
+    margin-top:18px;
+    max-width:280px;
+  }
+
+  .shopping-actions button{
+    flex:1;
+    padding:11px;
+    border-radius:8px;
+    border:none;
+    font-family:'Assistant', sans-serif;
+    font-weight:600;
+    font-size:0.9rem;
+    cursor:pointer;
+    transition:background 0.2s ease;
+  }
+  .shopping-copy{ background:var(--accent); color:var(--paper); }
+  .shopping-copy:hover{ background:var(--accent-deep); }
+  .shopping-close{ background:var(--paper-deep); color:var(--ink); }
+  .shopping-close:hover{ background:var(--tan); }
+
+  @media (max-width: 760px){
+    .shopping-fab{ left:16px; bottom:16px; padding:12px 18px; font-size:0.85rem; }
+    .shopping-page h2{ font-size:1.9rem; }
+    .shopping-actions{ max-width:100%; }
+  }
+
+  @media print{
+    .shopping-fab, .shopping-page{ display:none !important; }
+  }
+
   @media print{
     .auth-overlay{ display:none !important; }
     body.auth-locked nav.toc,
@@ -698,6 +890,8 @@
     </div>
     <div class="page-nav empty" id="pageNav"></div>
   </main>
+
+  <button class="shopping-fab" id="shoppingFab" onclick="handleShoppingFabClick()">🛒 רשימת קניות<span id="shoppingCount"></span></button>
 
 <script>
   const recipes = [
@@ -1397,10 +1591,99 @@
         "קרוטונים תוצרת בית: חותכים לחם/חלה/באגט לקוביות, מתבלים במלח, שמן זית ושן שום כתושה. מפזרים על תבנית תנור מרופדת בנייר אפייה ואופים ב-200 מעלות עד שמתקשים ומשחימים.",
       ],
     },
+    {
+      title: "סלט ירקות",
+      category: "סלטים",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "1 אריזה", name: "חסה לאליק (או חצי אריזה חסה סלנובה)" },
+        { amt: "2", name: "מלפפונים" },
+        { amt: "15", name: "עגבניות שרי" },
+        { amt: "1", name: "בטטה" },
+        { amt: "1", name: "אבוקדו (או ממרח אבוקדו מוכן)" },
+      ],
+      steps: [
+        "חותכים את הבטטה לקוביות ואופים בתנור ב-200 מעלות עד שמתרככת.",
+        "מועכים את האבוקדו כדי שישמש כרוטב לסלט (או משתמשים בממרח אבוקדו מוכן).",
+        "חותכים את החסה, המלפפונים והעגבניות שרי, ומערבבים עם הבטטה הצלויה ורוטב האבוקדו.",
+      ],
+      notes: [],
+    },
+    {
+      title: "סלט חסה",
+      category: "סלטים",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "1 אריזה", name: "חסה לאליק" },
+        { amt: "1", name: "גבינת צפתית 5%" },
+        { amt: "קצת", name: "רוטב ויניגרט קנוי (אסם)" },
+        { amt: "1", name: "תפוח" },
+        { amt: "כ-100 גרם", name: "פקאן מסוכר" },
+        { amt: "1 (אופציונלי)", name: "תפוח אדמה אפוי בתנור" },
+      ],
+      steps: [
+        "שמים את כל המצרכים ביחד בקערה ומערבבים.",
+        "מגרדים מעל את הצפתית ומגישים.",
+      ],
+      notes: [],
+    },
 
   ];
 
   let current = 'toc';
+
+  const SELECTED_KEY = 'recipebook_selected';
+  function loadSelected(){
+    try{
+      const raw = localStorage.getItem(SELECTED_KEY);
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    }catch(e){ return new Set(); }
+  }
+  function saveSelected(){
+    try{ localStorage.setItem(SELECTED_KEY, JSON.stringify([...selected])); }catch(e){}
+  }
+  let selected = loadSelected();
+  let selectMode = false;
+
+  function toggleSelect(i, checked){
+    if(checked) selected.add(i); else selected.delete(i);
+    saveSelected();
+    updateShoppingCount();
+  }
+
+  function updateShoppingCount(){
+    const el = document.getElementById('shoppingCount');
+    if(el) el.textContent = selected.size ? ` (${selected.size})` : '';
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function copyShoppingList(){
+    const ta = document.getElementById('shoppingText');
+    const btn = document.getElementById('shoppingCopyBtn');
+    if(!ta) return;
+    ta.select();
+    const done = () => {
+      const original = btn.textContent;
+      btn.textContent = 'הועתק ✓';
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    };
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(ta.value).then(done).catch(() => { document.execCommand('copy'); done(); });
+      } else {
+        document.execCommand('copy');
+        done();
+      }
+    }catch(e){
+      try{ document.execCommand('copy'); done(); }catch(e2){}
+    }
+  }
 
   function pad(n){ return String(n+1).padStart(2,'0'); }
 
@@ -1422,6 +1705,7 @@
       ${groups[cat].map(i => `
         <li>
           <button class="toc-item ${i===current?'active':''}" onclick="showRecipe(${i})">
+            ${selectMode ? `<input type="checkbox" class="select-check" ${selected.has(i)?'checked':''} onclick="event.stopPropagation()" onchange="toggleSelect(${i}, this.checked)" aria-label="לסמן להכנה">` : ''}
             <span class="toc-num">${pad(i)}</span>
             <span>${recipes[i].title}</span>
           </button>
@@ -1436,6 +1720,7 @@
       <section class="cover ${current==='toc'?'active':''}">
         <h2 class="cover-title">ספר המתכונים</h2>
         <p class="cover-sub">של עדן — תוכן העניינים</p>
+        ${selectMode ? '<p class="cover-hint">סמנו וי ליד מתכונים שמכינים כדי להוסיף אותם לרשימת הקניות</p>' : ''}
         ${Object.keys(groups).map(cat => `
           <div class="toc-section">
             <h3>${cat}</h3>
@@ -1443,6 +1728,7 @@
               ${groups[cat].map(i => `
                 <li>
                   <a class="toc-entry" href="#recipe-${i}" onclick="showRecipe(${i}); return false;">
+                    ${selectMode ? `<input type="checkbox" class="select-check" ${selected.has(i)?'checked':''} onclick="event.stopPropagation()" onchange="toggleSelect(${i}, this.checked)" aria-label="לסמן להכנה">` : ''}
                     <span class="e-num">${pad(i)}</span>
                     <span class="e-title">${recipes[i].title}</span>
                     <span class="e-leader"></span>
@@ -1452,13 +1738,165 @@
             </ul>
           </div>
         `).join('')}
+        ${selectMode ? '<button class="finish-select-btn" onclick="finishSelecting()">✓ סיימתי</button>' : ''}
+      </section>
+    `;
+  }
+
+  function normalizeIngredientName(name){
+    return String(name || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
+  }
+
+  // Basic pantry staples that never need to go on a shopping list.
+  const PANTRY_SKIP = new Set([
+    'מים', 'מים קרים', 'מים חמים', 'מים חמימים', 'מים פושרים', 'מים רותחים',
+    'מלח', 'מלח דק', 'מלח גס', 'מלח ים'
+  ]);
+  function isPantrySkip(name){
+    return PANTRY_SKIP.has(normalizeIngredientName(name));
+  }
+
+  const OWNED_KEY = 'recipebook_owned';
+  function loadOwned(){
+    try{
+      const raw = localStorage.getItem(OWNED_KEY);
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    }catch(e){ return new Set(); }
+  }
+  function saveOwned(){
+    try{ localStorage.setItem(OWNED_KEY, JSON.stringify([...ownedItems])); }catch(e){}
+  }
+  let ownedItems = loadOwned();
+
+  function toggleOwned(key, checked, checkboxEl){
+    if(checked) ownedItems.add(key); else ownedItems.delete(key);
+    saveOwned();
+    if(checkboxEl){
+      const line = checkboxEl.closest('.shopping-line');
+      if(line) line.classList.toggle('owned', checked);
+    }
+    updateShoppingCopyText();
+  }
+
+  function computeShoppingCopyText(){
+    if(selected.size === 0) return '';
+    const order = [...selected].sort((a,b) => a - b);
+    if(shoppingView === 'merged'){
+      const lines = buildMergedLines(order);
+      return lines.filter(l => !ownedItems.has(l.key)).map(l => l.label).join('\n');
+    }
+    const groups = buildByRecipeGroups(order);
+    return groups.map(g => {
+      const remaining = g.items.filter(it => !ownedItems.has(it.key));
+      if(remaining.length === 0) return '';
+      return `--- ${g.title} ---\n${remaining.map(it => it.label).join('\n')}`;
+    }).filter(Boolean).join('\n\n');
+  }
+
+  function updateShoppingCopyText(){
+    const ta = document.getElementById('shoppingText');
+    if(!ta) return;
+    ta.value = computeShoppingCopyText() || 'הכל כבר קיים בבית! 🎉';
+  }
+
+  function buildMergedLines(order){
+    const merged = new Map(); // key -> array of amt strings
+    order.forEach(i => {
+      const r = recipes[i];
+      if(!r) return;
+      r.ingredients.forEach(ing => {
+        if(isPantrySkip(ing.name)) return;
+        const key = normalizeIngredientName(ing.name) || ing.amt;
+        if(!merged.has(key)) merged.set(key, []);
+        merged.get(key).push(ing.amt);
+      });
+    });
+    const lines = [];
+    merged.forEach((amts, key) => {
+      lines.push({ key, label: `${key}: ${amts.join(' + ')}` });
+    });
+    return lines;
+  }
+
+  function buildByRecipeGroups(order){
+    return order.map(i => {
+      const r = recipes[i];
+      if(!r) return null;
+      const items = r.ingredients
+        .filter(ing => !isPantrySkip(ing.name))
+        .map(ing => {
+          const key = normalizeIngredientName(ing.name) || ing.amt;
+          const label = ing.name ? `${ing.amt} ${ing.name}` : ing.amt;
+          return { key, label };
+        });
+      return { title: r.title, items };
+    }).filter(Boolean);
+  }
+
+  let shoppingView = 'merged';
+
+  function setShoppingView(view){
+    shoppingView = view;
+    renderPage();
+  }
+
+  function renderShoppingPage(){
+    let inner;
+    if(selected.size === 0){
+      inner = '<p class="shopping-empty">עוד לא סימנתן מתכונים. חזרו לתוכן העניינים וסמנו וי ליד מתכונים כדי להוסיף אותם לרשימה.</p>';
+    } else {
+      const order = [...selected].sort((a,b) => a - b);
+      let checklistHtml, copyText;
+
+      if(shoppingView === 'merged'){
+        const lines = buildMergedLines(order);
+        checklistHtml = lines.map(l => `
+          <label class="shopping-line ${ownedItems.has(l.key)?'owned':''}">
+            <input type="checkbox" ${ownedItems.has(l.key)?'checked':''} onchange="toggleOwned('${l.key.replace(/'/g,"\\'")}', this.checked, this)">
+            <span>${escapeHtml(l.label)}</span>
+          </label>
+        `).join('');
+      } else {
+        const groups = buildByRecipeGroups(order);
+        checklistHtml = groups.map(g => `
+          <p class="shopping-group-title">${escapeHtml(g.title)}</p>
+          ${g.items.map(it => `
+            <label class="shopping-line ${ownedItems.has(it.key)?'owned':''}">
+              <input type="checkbox" ${ownedItems.has(it.key)?'checked':''} onchange="toggleOwned('${it.key.replace(/'/g,"\\'")}', this.checked, this)">
+              <span>${escapeHtml(it.label)}</span>
+            </label>
+          `).join('')}
+        `).join('');
+      }
+      copyText = computeShoppingCopyText();
+
+      inner = `
+        <div class="shopping-toggle">
+          <button class="${shoppingView==='merged'?'active':''}" onclick="setShoppingView('merged')">מאוחד (בלי כפילויות)</button>
+          <button class="${shoppingView==='byRecipe'?'active':''}" onclick="setShoppingView('byRecipe')">מחולק לפי מתכון</button>
+        </div>
+        <p class="shopping-owned-hint">סמנו מה שכבר יש לכם בבית - זה יורד מהרשימה להעתקה</p>
+        <div class="shopping-checklist">${checklistHtml}</div>
+        <p class="shopping-copy-label">להעתקה (בלי מה שכבר יש בבית):</p>
+        <textarea class="shopping-text" id="shoppingText" readonly>${escapeHtml(copyText || 'הכל כבר קיים בבית! 🎉')}</textarea>
+        <div class="shopping-actions">
+          <button class="shopping-copy" id="shoppingCopyBtn" onclick="copyShoppingList()">העתקה</button>
+        </div>
+      `;
+    }
+    return `
+      <section class="shopping-page ${current==='shopping'?'active':''}">
+        <button class="back-to-list" onclick="showToc()">→ חזרה לתוכן העניינים</button>
+        <h2>רשימת קניות</h2>
+        ${selectMode ? '<button class="finish-select-btn" onclick="finishSelecting()">✓ סיימתי - נקו את הבחירה</button>' : ''}
+        ${inner}
       </section>
     `;
   }
 
   function renderPage(){
     const container = document.getElementById('pageContent');
-    container.innerHTML = renderCover() + recipes.map((r,i) => `
+    container.innerHTML = renderCover() + renderShoppingPage() + recipes.map((r,i) => `
       <article class="recipe ${i===current?'active':''}" data-index="${i}" id="recipe-${i}">
         <button class="back-to-list" onclick="showToc()">→ חזרה לתוכן העניינים</button>
         <div class="chapter-num">${pad(i)}</div>
@@ -1494,7 +1932,7 @@
 
   function renderPageNav(){
     const nav = document.getElementById('pageNav');
-    if(current === 'toc'){
+    if(current === 'toc' || current === 'shopping'){
       nav.className = 'page-nav empty';
       nav.innerHTML = '';
       return;
@@ -1529,6 +1967,37 @@
     renderPage();
     renderPageNav();
     scrollContentToTop();
+  }
+
+  function showShoppingList(){
+    current = 'shopping';
+    renderToc();
+    renderPage();
+    renderPageNav();
+    scrollContentToTop();
+  }
+
+  function handleShoppingFabClick(){
+    if(!selectMode){
+      selectMode = true;
+      current = 'toc';
+      renderToc();
+      renderPage();
+      renderPageNav();
+      scrollContentToTop();
+    } else {
+      showShoppingList();
+    }
+  }
+
+  function finishSelecting(){
+    selected.clear();
+    saveSelected();
+    selectMode = false;
+    renderToc();
+    renderPage();
+    renderPageNav();
+    updateShoppingCount();
   }
 
   /* ---------- Simple passcode gate (no accounts - just a shared code, stored in this browser only) ---------- */
@@ -1576,6 +2045,7 @@
   renderToc();
   renderPage();
   renderPageNav();
+  updateShoppingCount();
 </script>
 
 </body>
