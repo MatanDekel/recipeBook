@@ -113,6 +113,13 @@
     transition:opacity 0.2s ease, background 0.2s ease;
   }
 
+  .toc-item-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .toc-item-row .toc-item{ flex:1; }
+
   .toc-item:hover{ opacity:1; background:rgba(255,255,255,0.06); }
 
   .toc-item.active{
@@ -149,6 +156,14 @@
   }
   .print-btn:hover{ background:var(--accent-deep); }
   .print-btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+  .cover-footer{
+    margin-top:40px;
+    padding-top:24px;
+    border-top:1px solid var(--tan);
+  }
+  .cover-footer .print-btn{ width:auto; padding:12px 24px; }
+  .cover-footer .hint{ color:var(--ink-soft); }
 
   .hint{
     font-size:0.72rem;
@@ -233,6 +248,14 @@
     margin:0;
     padding:0;
   }
+
+  .toc-entry-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    border-bottom:1px solid var(--paper-deep);
+  }
+  .toc-entry-row .toc-entry{ flex:1; border-bottom:none; }
 
   .toc-entry{
     width:100%;
@@ -880,11 +903,6 @@
       <p class="sub">של עדן</p>
     </button>
     <ul class="toc-list" id="tocList"></ul>
-    <div class="toc-footer">
-      <button class="print-btn" onclick="window.print()">🖨️ ייצוא ל-PDF / הדפסה</button>
-      <p class="hint">בהדפסה יופיעו כל המתכונים, כל אחד בעמוד נפרד. בחלון ההדפסה אפשר לבחור "שמור כ-PDF".</p>
-      <p class="user-row"><button class="logout-link" onclick="handleLogout()">נעילה מחדש</button></p>
-    </div>
   </nav>
 
   <main>
@@ -1706,9 +1724,9 @@
     list.innerHTML = Object.keys(groups).map(cat => `
       <p class="toc-category">${cat}</p>
       ${groups[cat].map(i => `
-        <li>
+        <li class="toc-item-row">
+          ${selectMode ? `<input type="checkbox" class="select-check" ${selected.has(i)?'checked':''} onchange="toggleSelect(${i}, this.checked)" aria-label="לסמן להכנה">` : ''}
           <button class="toc-item ${i===current?'active':''}" onclick="showRecipe(${i})">
-            ${selectMode ? `<input type="checkbox" class="select-check" ${selected.has(i)?'checked':''} onclick="event.stopPropagation()" onchange="toggleSelect(${i}, this.checked)" aria-label="לסמן להכנה">` : ''}
             <span class="toc-num">${pad(i)}</span>
             <span>${recipes[i].title}</span>
           </button>
@@ -1721,17 +1739,16 @@
     const groups = groupByCategory();
     return `
       <section class="cover ${current==='toc'?'active':''}">
-        <h2 class="cover-title">ספר המתכונים</h2>
-        <p class="cover-sub">של עדן — תוכן העניינים</p>
+        <h2 class="cover-title">תוכן העניינים</h2>
         ${selectMode ? '<p class="cover-hint">סמנו וי ליד מתכונים שמכינים כדי להוסיף אותם לרשימת הקניות</p>' : ''}
         ${Object.keys(groups).map(cat => `
           <div class="toc-section">
             <h3>${cat}</h3>
             <ul class="toc-entries">
               ${groups[cat].map(i => `
-                <li>
+                <li class="toc-entry-row">
+                  ${selectMode ? `<input type="checkbox" class="select-check" ${selected.has(i)?'checked':''} onchange="toggleSelect(${i}, this.checked)" aria-label="לסמן להכנה">` : ''}
                   <a class="toc-entry" href="#recipe-${i}" onclick="showRecipe(${i}); return false;">
-                    ${selectMode ? `<input type="checkbox" class="select-check" ${selected.has(i)?'checked':''} onclick="event.stopPropagation()" onchange="toggleSelect(${i}, this.checked)" aria-label="לסמן להכנה">` : ''}
                     <span class="e-num">${pad(i)}</span>
                     <span class="e-title">${recipes[i].title}</span>
                     <span class="e-leader"></span>
@@ -1742,6 +1759,10 @@
           </div>
         `).join('')}
         ${selectMode ? '<button class="finish-select-btn" onclick="finishSelecting()">✓ סיימתי</button>' : ''}
+        <div class="cover-footer">
+          <button class="print-btn" onclick="window.print()">🖨️ ייצוא ל-PDF / הדפסה</button>
+          <p class="hint">בהדפסה יופיעו כל המתכונים, כל אחד בעמוד נפרד. בחלון ההדפסה אפשר לבחור "שמור כ-PDF".</p>
+        </div>
       </section>
     `;
   }
