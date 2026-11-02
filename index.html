@@ -682,27 +682,6 @@
   .logout-link:hover{ color:var(--paper); }
 
   /* ---------- Shopping list ---------- */
-  .shopping-fab{
-    position:fixed;
-    left:24px;
-    bottom:24px;
-    z-index:500;
-    background:var(--accent);
-    color:var(--paper);
-    border:none;
-    border-radius:999px;
-    padding:14px 22px;
-    font-family:'Assistant', sans-serif;
-    font-weight:600;
-    font-size:0.92rem;
-    box-shadow:0 8px 24px rgba(58,46,39,0.35);
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    transition:background 0.2s ease, transform 0.15s ease;
-  }
-  .shopping-fab:hover{ background:var(--accent-deep); transform:translateY(-2px); }
 
   .shopping-page{ display:none; animation: pageIn 0.35s ease; }
   .shopping-page.active{ display:block; }
@@ -834,13 +813,12 @@
   .shopping-close:hover{ background:var(--tan); }
 
   @media (max-width: 760px){
-    .shopping-fab{ left:16px; bottom:16px; padding:12px 18px; font-size:0.85rem; }
     .shopping-page h2{ font-size:1.9rem; }
     .shopping-actions{ max-width:100%; }
   }
 
   @media print{
-    .shopping-fab, .shopping-page{ display:none !important; }
+    .shopping-page{ display:none !important; }
   }
 
   @media print{
@@ -883,22 +861,6 @@
   }
 
   /* ---------- Recipes to try ---------- */
-  .toc-try-btn{
-    display:block;
-    width:100%;
-    text-align:right;
-    background:rgba(255,255,255,0.08);
-    border:1px solid rgba(255,255,255,0.18);
-    color:var(--paper);
-    font-family:'Assistant', sans-serif;
-    font-size:0.88rem;
-    padding:10px 12px;
-    border-radius:8px;
-    cursor:pointer;
-    margin:0 0 22px;
-    transition:background 0.2s ease;
-  }
-  .toc-try-btn:hover{ background:rgba(255,255,255,0.14); }
 
   .try-page{ display:none; animation: pageIn 0.35s ease; }
   .try-page.active{ display:block; }
@@ -952,13 +914,165 @@
   }
 
   @media print{
-    .try-page, .try-recipe, .toc-try-btn{ display:none !important; }
+    .try-page, .try-recipe, .menu-btn, .menu-panel{ display:none !important; }
   }
 
   /* ---------- Print-only title (front page of the exported PDF) ---------- */
   .print-only{ display:none; }
   @media print{
     .print-only{ display:block !important; }
+  }
+
+  /* ---------- Hamburger menu (top-left) ---------- */
+  .menu-btn{
+    position:fixed;
+    top:14px;
+    left:14px;
+    z-index:600;
+    width:44px;
+    height:44px;
+    border:none;
+    border-radius:50%;
+    background:var(--accent);
+    color:var(--paper);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    cursor:pointer;
+    box-shadow:0 4px 14px rgba(58,46,39,0.3);
+    transition:background 0.2s ease;
+  }
+  .menu-btn:hover{ background:var(--accent-deep); }
+  .menu-btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .menu-btn span{
+    display:block;
+    width:20px;
+    height:2px;
+    background:currentColor;
+    border-radius:2px;
+    transition:transform 0.2s ease, opacity 0.2s ease;
+  }
+  .menu-btn.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+  .menu-btn.open span:nth-child(2){ opacity:0; }
+  .menu-btn.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  .menu-panel{
+    position:fixed;
+    top:66px;
+    left:14px;
+    z-index:600;
+    min-width:230px;
+    background:var(--paper);
+    border:1px solid var(--tan);
+    border-radius:12px;
+    box-shadow:0 12px 32px rgba(58,46,39,0.25);
+    padding:6px;
+    display:none;
+  }
+  .menu-panel.open{ display:block; }
+
+  .menu-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    text-align:right;
+    background:none;
+    border:none;
+    padding:12px 14px;
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-size:0.95rem;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .menu-item:hover{ background:var(--paper-deep); }
+  .menu-icon{ font-size:1.05rem; }
+  .menu-count{ color:var(--sage); font-size:0.85rem; }
+
+  /* ---------- Nutrition card ---------- */
+  .nutrition{
+    margin:0 0 28px;
+    padding:16px 18px;
+    background:var(--paper-deep);
+    border-radius:12px;
+  }
+  .nut-head{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px 16px;
+    margin-bottom:14px;
+  }
+  .nut-title{
+    font-family:'Frank Ruhl Libre', serif;
+    font-weight:700;
+    font-size:1rem;
+    color:var(--accent-deep);
+  }
+  .nut-title small{
+    font-family:'Assistant', sans-serif;
+    font-weight:400;
+    font-size:0.78rem;
+    color:var(--ink-soft);
+  }
+  .nut-servings{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+  }
+  .nut-servings input{
+    width:64px;
+    text-align:center;
+    padding:6px 4px;
+    border:1px solid var(--tan);
+    border-radius:8px;
+    font-family:'Heebo', sans-serif;
+    font-size:0.95rem;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .nut-servings input:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .nut-step{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    border:1px solid var(--tan);
+    background:var(--paper);
+    color:var(--accent-deep);
+    font-size:1.1rem;
+    line-height:1;
+    cursor:pointer;
+  }
+  .nut-step:hover{ background:var(--tan); }
+  .nut-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:10px;
+    text-align:center;
+  }
+  .nut-grid div{ display:flex; flex-direction:column; gap:2px; }
+  .nut-grid b{
+    font-family:'Heebo', sans-serif;
+    font-size:1.35rem;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .nut-grid span{ font-size:0.75rem; color:var(--ink-soft); }
+  .nut-foot{ margin:12px 0 0; font-size:0.78rem; color:var(--ink-soft); }
+  .nut-note{ margin:4px 0 0; font-size:0.72rem; color:var(--ink-soft); opacity:0.85; }
+
+  @media (max-width: 480px){
+    .nut-grid{ grid-template-columns:repeat(2, 1fr); row-gap:14px; }
+  }
+
+  @media print{
+    .nutrition{ display:none !important; }
   }
 </style>
 </head>
@@ -976,12 +1090,23 @@
     </div>
   </div>
 
+  <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" aria-label="תפריט" aria-haspopup="true" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="menu-panel" id="menuPanel" role="menu">
+    <button class="menu-item" role="menuitem" onclick="menuGoTry()">
+      <span class="menu-icon">📝</span><span>מתכונים לנסות</span><span class="menu-count" id="tryCount"></span>
+    </button>
+    <button class="menu-item" role="menuitem" onclick="menuGoShopping()">
+      <span class="menu-icon">🛒</span><span id="menuShopLabel">מצב רשימת קניות</span><span class="menu-count" id="shoppingCount"></span>
+    </button>
+  </div>
+
   <nav class="toc" aria-label="רשימת מתכונים">
     <button class="toc-brand" onclick="showToc()">
       <h1>ספר המתכונים</h1>
       <p class="sub">של עדן ומתן</p>
     </button>
-    <button class="toc-try-btn" onclick="showTryList()">📝 מתכונים לנסות<span id="tryCount"></span></button>
     <ul class="toc-list" id="tocList"></ul>
   </nav>
 
@@ -992,8 +1117,6 @@
     <div class="page-nav empty" id="pageNav"></div>
   </main>
 
-  <button class="shopping-fab" id="shoppingFab" onclick="handleShoppingFabClick()">🛒 רשימת קניות<span id="shoppingCount"></span></button>
-
 <script>
   const baseRecipes = [
     {
@@ -1001,6 +1124,7 @@
       category: "קינוחים",
       time: "כ-30 דקות",
       yield: "10-12 עוגיות גדולות (או 20-22 קטנות)",
+      nutrition: { kcal: 3240, protein: 41, fat: 150, carbs: 429 },
       ingredients: [
         { amt: "100 גרם", name: "חמאה רכה (ר' הערות לגרסה פרווה)" },
         { amt: "125 גרם (1/2 כוס)", name: "סוכר חום כהה" },
@@ -1036,6 +1160,7 @@
       category: "קינוחים",
       time: "כ-50 דקות",
       yield: "תבנית מלבנית קטנה בגודל 22X31",
+      nutrition: { kcal: 3740, protein: 47, fat: 213, carbs: 418 },
       ingredients: [
         { amt: "3", name: "ביצים גדולות" },
         { amt: "3/4 כוס (150 ג')", name: "סוכר" },
@@ -1059,6 +1184,7 @@
       category: "קינוחים",
       time: "כ-35 דקות",
       yield: "מגש עוגיות",
+      nutrition: { kcal: 4540, protein: 63, fat: 251, carbs: 542 },
       ingredients: [
         { amt: "200 גרם", name: "חמאה קרה, חתוכה לקוביות (לבצק)" },
         { amt: "300 גרם (2¼ כוסות)", name: "קמח (לבצק)" },
@@ -1083,6 +1209,7 @@
       category: "קינוחים",
       time: "כ-50 דקות",
       yield: "4 מנות",
+      nutrition: { kcal: 2300, protein: 19, fat: 84, carbs: 389 },
       ingredients: [
         { amt: "7", name: "תפוחי עץ גרני סמיט בינוניים (לתפוחים)" },
         { amt: "2 כפות", name: "סוכר חום כהה (לתפוחים)" },
@@ -1111,6 +1238,7 @@
       category: "מנות עיקריות",
       time: "כשעתיים (כולל השריה במקרר)",
       yield: "כ-15 שיפודי עץ/ברזל",
+      nutrition: { kcal: 2120, protein: 198, fat: 111, carbs: 69 },
       ingredients: [
         { amt: "1 קילו", name: "פרגיות חתוכות לקוביות בגודל ביס" },
         { amt: "1/4 כוס", name: "מיונז" },
@@ -1137,6 +1265,7 @@
       category: "מנות עיקריות",
       time: "כשעה ורבע",
       yield: "כמות למשפחה, לפי חבילת ניוקי של 500 גרם",
+      nutrition: { kcal: 3090, protein: 134, fat: 163, carbs: 261 },
       ingredients: [
         { amt: "1 חבילה (500 גרם)", name: "ניוקי מיובש בוואקום" },
         { amt: "3 כרעיים או 6 שוקיים", name: "עוף" },
@@ -1168,6 +1297,7 @@
       category: "מנות עיקריות",
       time: "כשעה ורבע",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 4540, protein: 234, fat: 179, carbs: 504 },
       ingredients: [
         { amt: "1 ק\"ג", name: "פרגיות חתוכות לרצועות גדולות" },
         { amt: "כפית", name: "אבקת סודה לשתייה, להשרייה" },
@@ -1206,6 +1336,7 @@
       category: "מנות עיקריות",
       time: "כ-40 דקות",
       yield: "4 סועדים",
+      nutrition: { kcal: 2460, protein: 61, fat: 126, carbs: 273 },
       ingredients: [
         { amt: "300 גרם", name: "פסטה רדיאטורי שחורה" },
         { amt: "לפי הצורך", name: "עגבניות שרי" },
@@ -1231,6 +1362,7 @@
       title: "שניצלים",
       category: "מנות עיקריות",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 1830, protein: 146, fat: 95, carbs: 93 },
       ingredients: [
         { amt: "500 גרם", name: "חזה עוף פרוס דק" },
         { amt: "2", name: "ביצים L (לבלילת הביצים)" },
@@ -1254,6 +1386,7 @@
       category: "מנות עיקריות",
       time: "כשעה וחצי",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 2760, protein: 74, fat: 207, carbs: 149 },
       ingredients: [
         { amt: "100 גרם", name: "חמאה (לבצק)" },
         { amt: "כפית", name: "חרדל (לבצק)" },
@@ -1289,6 +1422,7 @@
       category: "מנות עיקריות",
       time: "כ-30 דקות",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 3420, protein: 173, fat: 127, carbs: 394 },
       ingredients: [
         { amt: "1/2 קילו", name: "בשר בקר לצלייה מהירה, חתוך לרצועות דקות (שייטל/סינטה/אנטריקוט)" },
         { amt: "3 חבילות קטנות (סה\"כ 600 גרם)", name: "אטריות טריות למוקפץ" },
@@ -1321,6 +1455,7 @@
       category: "מנות עיקריות",
       time: "כ-5-6 שעות",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 8470, protein: 347, fat: 677, carbs: 226 },
       ingredients: [
         { amt: "2 קילו", name: "קוביות בשר אונטריב (מספר 2)" },
         { amt: "4-5", name: "תפוחי אדמה גדולים, חתוכים לקוביות" },
@@ -1350,6 +1485,7 @@
       category: "מנות עיקריות",
       time: "כ-40 דקות",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 2570, protein: 140, fat: 117, carbs: 239 },
       ingredients: [
         { amt: "1/2 ק\"ג", name: "פילה עוף" },
         { amt: "1", name: "פלפל ירוק" },
@@ -1393,6 +1529,7 @@
       title: "פילה עוף פפריקה",
       category: "מנות עיקריות",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 1610, protein: 235, fat: 56, carbs: 32 },
       ingredients: [
         { amt: "קילו", name: "פילה עוף" },
         { amt: "2 כפות", name: "שמן זית" },
@@ -1417,6 +1554,7 @@
       category: "תוספות",
       time: "כ-20 דקות",
       yield: "4 כוסות סולת",
+      nutrition: { kcal: 3380, protein: 85, fat: 117, carbs: 488 },
       ingredients: [
         { amt: "4 כוסות", name: "מים רותחים" },
         { amt: "1/2 כוס", name: "שמן" },
@@ -1440,6 +1578,7 @@
       category: "מנות ראשונות",
       time: "כ-3 שעות",
       yield: "צנצנת גדולה",
+      nutrition: { kcal: 940, protein: 17, fat: 58, carbs: 104 },
       ingredients: [
         { amt: "2 פחיות", name: "עגבניות מרוסקות" },
         { amt: "1/4 כוס (אפשר גם קצת יותר)", name: "שמן" },
@@ -1459,6 +1598,7 @@
       category: "מנות ראשונות",
       time: "כשעה",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 530, protein: 16, fat: 29, carbs: 63 },
       ingredients: [
         { amt: "2 שקיות", name: "כרובית קפואה" },
         { amt: "לפי הצורך", name: "שמן זית" },
@@ -1482,6 +1622,7 @@
       category: "מנות ראשונות",
       time: "כשעה ורבע",
       yield: "מנה ראשונה ל-2 סניות (2 חצילים)",
+      nutrition: { kcal: 1120, protein: 48, fat: 82, carbs: 58 },
       ingredients: [
         { amt: "2", name: "חצילים" },
         { amt: "200 גרם", name: "בשר טחון" },
@@ -1510,6 +1651,7 @@
       category: "מנות ראשונות",
       time: "כשעה וחצי (כולל קירור)",
       yield: "כ-10 כדורי ארנצ'יני",
+      nutrition: { kcal: 2900, protein: 109, fat: 156, carbs: 267 },
       ingredients: [
         { amt: "50 גרם", name: "חמאה (לריזוטו)" },
         { amt: "2 שיני שום", name: "כתושות (לריזוטו)" },
@@ -1544,6 +1686,7 @@
       category: "לחמים",
       time: "כ-3 שעות (כולל תפיחה)",
       yield: "8 פיתות בינוניות (אפשר לחלק לפחות כדורים לפיתות גדולות יותר)",
+      nutrition: { kcal: 4800, protein: 128, fat: 118, carbs: 799 },
       ingredients: [
         { amt: "ק\"ג", name: "קמח לחם/פיצה" },
         { amt: "50 גרם", name: "שמרים טריים (או 20 גרם שמרים יבשים)" },
@@ -1569,6 +1712,7 @@
       category: "לחמים",
       time: "כ-2.5 שעות (כולל תפיחה)",
       yield: "12 לחמניות (כ-65 גרם כל אחת)",
+      nutrition: { kcal: 2570, protein: 66, fat: 60, carbs: 435 },
       ingredients: [
         { amt: "500 גרם", name: "קמח לבן מנופה" },
         { amt: "10 גרם (כף בערך)", name: "שמרים יבשים" },
@@ -1597,6 +1741,7 @@
       category: "לחמים",
       time: "כ-6 שעות (כולל תפיחה)",
       yield: "כ-16 כדורי בצק (110 גרם כל אחד)",
+      nutrition: { kcal: 5050, protein: 141, fat: 131, carbs: 815 },
       ingredients: [
         { amt: "1 ק\"ג", name: "קמח לחם/קמח לבן" },
         { amt: "400 גרם/מ\"ל", name: "מים" },
@@ -1630,6 +1775,7 @@
       category: "לחמים",
       time: "כ-5 שעות (כולל תפיחות וקיפולים)",
       yield: "תבנית בגודל 33×23 ס\"מ",
+      nutrition: { kcal: 2950, protein: 66, fat: 77, carbs: 492 },
       ingredients: [
         { amt: "600 גרם", name: "קמח 00 / קמח מניטובה" },
         { amt: "430 גרם", name: "מים קרים" },
@@ -1668,6 +1814,7 @@
       category: "כשר לפסח",
       time: "כ-3 שעות (כולל צינון)",
       yield: "תבנית עגולה בקוטר 22 ס\"מ",
+      nutrition: { kcal: 5590, protein: 82, fat: 387, carbs: 456 },
       ingredients: [
         { amt: "6", name: "ביצים L" },
         { amt: "1 כוס", name: "סוכר" },
@@ -1698,6 +1845,7 @@
       category: "מאפים מלוחים",
       time: "כשעה ורבע",
       yield: "תבנית קיש אחת",
+      nutrition: { kcal: 4600, protein: 94, fat: 315, carbs: 350 },
       ingredients: [
         { amt: "270 גרם (כוס + 4 כפות)", name: "קמח (לבצק)" },
         { amt: "8 גרם", name: "מלח (לבצק)" },
@@ -1727,6 +1875,7 @@
       category: "מרקים",
       time: "כ-40 דקות",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 930, protein: 15, fat: 46, carbs: 121 },
       ingredients: [
         { amt: "2 כפות", name: "שמן זית" },
         { amt: "5 שיני שום", name: "קלופות, שלמות" },
@@ -1758,6 +1907,7 @@
       category: "מרקים",
       time: "כ-30-35 דקות",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 1860, protein: 97, fat: 46, carbs: 275 },
       ingredients: [
         { amt: "2 כוסות", name: "עדשים כתומות שטופות" },
         { amt: "2 גבעולים", name: "סלרי קצוצים" },
@@ -1784,6 +1934,7 @@
       title: "סלט ירקות",
       category: "סלטים",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 500, protein: 13, fat: 22, carbs: 75 },
       ingredients: [
         { amt: "1 אריזה", name: "חסה לאליק (או חצי אריזה חסה סלנובה)" },
         { amt: "2", name: "מלפפונים" },
@@ -1802,6 +1953,7 @@
       title: "סלט חסה",
       category: "סלטים",
       yield: "כמות למשפחה",
+      nutrition: { kcal: 1030, protein: 39, fat: 60, carbs: 90 },
       ingredients: [
         { amt: "1 אריזה", name: "חסה לאליק" },
         { amt: "1", name: "גבינת צפתית 5%" },
@@ -2137,6 +2289,99 @@
     `;
   }
 
+
+  /* ---------- Nutrition (rough estimates, per recipe) ---------- */
+  const SERVINGS_KEY = 'recipebook_servings';
+  function loadServings(){
+    try{
+      const raw = localStorage.getItem(SERVINGS_KEY);
+      const o = raw ? JSON.parse(raw) : {};
+      return (o && typeof o === 'object') ? o : {};
+    }catch(e){ return {}; }
+  }
+  let servingsMap = loadServings();
+  function saveServings(){
+    try{ localStorage.setItem(SERVINGS_KEY, JSON.stringify(servingsMap)); }catch(e){}
+  }
+  function getServings(title){
+    const n = Number(servingsMap[title]);
+    return n > 0 ? n : 1;
+  }
+  function attr(str){
+    return escapeHtml(str).replace(/"/g, '&quot;');
+  }
+  function fmtNum(v){
+    return v >= 10 ? String(Math.round(v)) : String(Math.round(v * 10) / 10);
+  }
+
+  function nutritionHtml(r, id){
+    const n = r.nutrition;
+    if(!n) return '';
+    const s = getServings(r.title);
+    return `
+      <div class="nutrition" id="nut-${id}" data-title="${attr(r.title)}" data-kcal="${n.kcal}" data-protein="${n.protein}" data-fat="${n.fat}" data-carbs="${n.carbs}">
+        <div class="nut-head">
+          <span class="nut-title">ערכים תזונתיים למנה <small>(הערכה)</small></span>
+          <span class="nut-servings">
+            <label for="nut-in-${id}">מספר מנות</label>
+            <button type="button" class="nut-step" onclick="stepServings('${id}', -1)" aria-label="פחות מנות">−</button>
+            <input type="number" id="nut-in-${id}" min="1" step="1" inputmode="numeric" value="${s}" oninput="onServingsInput('${id}', this)" onblur="onServingsBlur('${id}', this)">
+            <button type="button" class="nut-step" onclick="stepServings('${id}', 1)" aria-label="יותר מנות">+</button>
+          </span>
+        </div>
+        <div class="nut-grid">
+          <div><b class="nut-kcal"></b><span>קלוריות</span></div>
+          <div><b class="nut-protein"></b><span>חלבון (ג׳)</span></div>
+          <div><b class="nut-fat"></b><span>שומן (ג׳)</span></div>
+          <div><b class="nut-carbs"></b><span>פחמימות (ג׳)</span></div>
+        </div>
+        <p class="nut-foot"></p>
+        <p class="nut-note">הערכה גסה לפי המצרכים שבמתכון, בלי מצרכים להגשה או לקישוט שאין להם כמות.</p>
+      </div>`;
+  }
+
+  function nutFill(block, s){
+    const kcal = Number(block.dataset.kcal);
+    const p = Number(block.dataset.protein);
+    const f = Number(block.dataset.fat);
+    const c = Number(block.dataset.carbs);
+    block.querySelector('.nut-kcal').textContent = fmtNum(kcal / s);
+    block.querySelector('.nut-protein').textContent = fmtNum(p / s);
+    block.querySelector('.nut-fat').textContent = fmtNum(f / s);
+    block.querySelector('.nut-carbs').textContent = fmtNum(c / s);
+    block.querySelector('.nut-foot').textContent = s === 1
+      ? 'כרגע כל המתכון נחשב מנה אחת. הזינו את מספר המנות כדי לחלק.'
+      : 'סה״כ בכל המתכון: ' + Math.round(kcal).toLocaleString('en-US') + ' קלוריות';
+  }
+
+  function onServingsInput(id, input){
+    const block = document.getElementById('nut-' + id);
+    if(!block) return;
+    const s = parseFloat(input.value);
+    if(!(s > 0)) return; // empty or invalid while typing - keep what is shown
+    servingsMap[block.dataset.title] = s;
+    saveServings();
+    nutFill(block, s);
+  }
+
+  function onServingsBlur(id, input){
+    const block = document.getElementById('nut-' + id);
+    if(!block) return;
+    const s = getServings(block.dataset.title);
+    input.value = s;
+    nutFill(block, s);
+  }
+
+  function stepServings(id, delta){
+    const input = document.getElementById('nut-in-' + id);
+    const block = document.getElementById('nut-' + id);
+    if(!input || !block) return;
+    const typed = parseFloat(input.value);
+    const cur = typed > 0 ? typed : getServings(block.dataset.title);
+    input.value = Math.max(1, Math.round(cur) + delta);
+    onServingsInput(id, input);
+  }
+
   function renderRecipeArticle(r, o){
     return `
       <article class="${o.cls}${o.active ? ' active' : ''}" id="${o.id}">
@@ -2147,6 +2392,7 @@
         <div class="meta-row">
           <span>🍽️ ${r.yield}</span>
         </div>
+        ${nutritionHtml(r, o.id)}
         <hr class="divider">
         <div class="cols ${r.steps && r.steps.length ? '' : 'single'}">
           <div class="block">
@@ -2228,6 +2474,7 @@
         </div>`
     })).join('');
     container.innerHTML = renderCover() + renderShoppingPage() + renderTryPage() + bookHtml + tryHtml;
+    container.querySelectorAll('.nutrition').forEach(b => nutFill(b, getServings(b.dataset.title)));
     updateTryCount();
   }
 
@@ -2334,6 +2581,41 @@
     renderPageNav();
     updateShoppingCount();
   }
+
+
+  /* ---------- Hamburger menu ---------- */
+  function refreshMenu(){
+    const label = document.getElementById('menuShopLabel');
+    if(label) label.textContent = selectMode ? 'הצגת רשימת קניות' : 'מצב רשימת קניות';
+  }
+
+  function toggleMenu(force){
+    const panel = document.getElementById('menuPanel');
+    const btn = document.getElementById('menuBtn');
+    if(!panel || !btn) return;
+    const open = force !== undefined ? force : !panel.classList.contains('open');
+    if(open) refreshMenu();
+    panel.classList.toggle('open', open);
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  function menuGoTry(){
+    toggleMenu(false);
+    showTryList();
+  }
+
+  function menuGoShopping(){
+    toggleMenu(false);
+    handleShoppingFabClick();
+  }
+
+  document.addEventListener('click', e => {
+    if(!e.target.closest('#menuPanel') && !e.target.closest('#menuBtn')) toggleMenu(false);
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') toggleMenu(false);
+  });
 
   /* ---------- Simple passcode gate (no accounts - just a shared code, stored in this browser only) ---------- */
   const ACCESS_CODE = '1234';
