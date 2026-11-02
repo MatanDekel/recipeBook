@@ -881,6 +881,85 @@
     .toc-section{ margin-bottom:18px; }
     .toc-entry{ padding:6px 2px; font-size:0.85rem; }
   }
+
+  /* ---------- Recipes to try ---------- */
+  .toc-try-btn{
+    display:block;
+    width:100%;
+    text-align:right;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.18);
+    color:var(--paper);
+    font-family:'Assistant', sans-serif;
+    font-size:0.88rem;
+    padding:10px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    margin:0 0 22px;
+    transition:background 0.2s ease;
+  }
+  .toc-try-btn:hover{ background:rgba(255,255,255,0.14); }
+
+  .try-page{ display:none; animation: pageIn 0.35s ease; }
+  .try-page.active{ display:block; }
+
+  .try-cat{
+    font-size:0.8rem;
+    color:var(--sage);
+    flex-shrink:0;
+  }
+
+  .try-badge{
+    display:inline-block;
+    font-family:'Heebo', sans-serif;
+    font-size:0.8rem;
+    font-weight:600;
+    color:var(--sage);
+    border:1.5px solid var(--sage);
+    border-radius:999px;
+    padding:6px 16px;
+    margin-bottom:18px;
+  }
+
+  .try-actions{
+    margin-top:40px;
+    padding-top:24px;
+    border-top:1px solid var(--tan);
+  }
+
+  .try-like-btn{
+    background:var(--sage);
+    color:var(--paper);
+    border:none;
+    padding:14px 24px;
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-weight:600;
+    font-size:0.95rem;
+    cursor:pointer;
+    transition:background 0.2s ease;
+  }
+  .try-like-btn:hover{ background:#65735a; }
+
+  .try-note{
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    margin:10px 0 0;
+  }
+
+  @media (max-width: 760px){
+    .try-like-btn{ width:100%; }
+  }
+
+  @media print{
+    .try-page, .try-recipe, .toc-try-btn{ display:none !important; }
+  }
+
+  /* ---------- Print-only title (front page of the exported PDF) ---------- */
+  .print-only{ display:none; }
+  @media print{
+    .print-only{ display:block !important; }
+  }
 </style>
 </head>
 <body>
@@ -897,11 +976,12 @@
     </div>
   </div>
 
-  <nav class="toc" aria-label="תוכן עניינים">
+  <nav class="toc" aria-label="רשימת מתכונים">
     <button class="toc-brand" onclick="showToc()">
       <h1>ספר המתכונים</h1>
       <p class="sub">של עדן ומתן</p>
     </button>
+    <button class="toc-try-btn" onclick="showTryList()">📝 מתכונים לנסות<span id="tryCount"></span></button>
     <ul class="toc-list" id="tocList"></ul>
   </nav>
 
@@ -915,7 +995,7 @@
   <button class="shopping-fab" id="shoppingFab" onclick="handleShoppingFabClick()">🛒 רשימת קניות<span id="shoppingCount"></span></button>
 
 <script>
-  const recipes = [
+  const baseRecipes = [
     {
       title: "עוגיות שוקולד צ'יפס גדולות",
       category: "קינוחים",
@@ -1739,17 +1819,68 @@
 
   ];
 
-  let current = 'toc';
+  // ---------- מתכונים לנסות (עוד לא בספר) ----------
+  // כל מתכון כאן כבר בפורמט המלא של הספר. כשמסמנים "אהבתי" הוא עובר לספר, לפי הקטגוריה שלו.
+  const tryRecipes = [
+  ];
 
-  const SELECTED_KEY = 'recipebook_selected';
-  function loadSelected(){
+  const PROMOTED_KEY = 'recipebook_promoted';
+  function loadPromoted(){
     try{
-      const raw = localStorage.getItem(SELECTED_KEY);
+      const raw = localStorage.getItem(PROMOTED_KEY);
       return raw ? new Set(JSON.parse(raw)) : new Set();
     }catch(e){ return new Set(); }
   }
+  function savePromoted(){
+    try{ localStorage.setItem(PROMOTED_KEY, JSON.stringify([...promoted])); }catch(e){}
+  }
+  let promoted = loadPromoted();
+
+  // The book = base recipes + try-recipes that were marked "liked", grouped by category.
+  // Order of the categories in the book (meal order). A category that is not listed
+  // here is placed after these, in the order it first appears.
+  const CATEGORY_ORDER = [
+    'מנות ראשונות', 'מרקים', 'סלטים', 'מנות עיקריות', 'תוספות',
+    'לחמים', 'מאפים מלוחים', 'קינוחים', 'כשר לפסח'
+  ];
+
+  let recipes = [];
+  function rebuildRecipes(){
+    const combined = baseRecipes.concat(tryRecipes.filter(r => promoted.has(r.title)));
+    const order = CATEGORY_ORDER.slice();
+    combined.forEach(r => { if(!order.includes(r.category)) order.push(r.category); });
+    recipes = combined
+      .map((r, k) => ({ r, k }))
+      .sort((a, b) => (order.indexOf(a.r.category) - order.indexOf(b.r.category)) || (a.k - b.k))
+      .map(x => x.r);
+  }
+  rebuildRecipes();
+
+  function pendingTry(){
+    return tryRecipes.map((r, idx) => ({ r, idx })).filter(x => !promoted.has(x.r.title));
+  }
+
+  let current = 'toc';
+  let currentTry = null;
+
+  const SELECTED_KEY = 'recipebook_selected';
+  // The selection is saved by recipe title (not by position), so it stays correct
+  // when recipes are added or the order of the book changes.
+  function loadSelected(){
+    try{
+      const raw = localStorage.getItem(SELECTED_KEY);
+      const titles = raw ? JSON.parse(raw) : [];
+      return new Set(titles
+        .filter(t => typeof t === 'string')
+        .map(t => recipes.findIndex(r => r.title === t))
+        .filter(i => i >= 0));
+    }catch(e){ return new Set(); }
+  }
   function saveSelected(){
-    try{ localStorage.setItem(SELECTED_KEY, JSON.stringify([...selected])); }catch(e){}
+    try{
+      const titles = [...selected].map(i => recipes[i] && recipes[i].title).filter(Boolean);
+      localStorage.setItem(SELECTED_KEY, JSON.stringify(titles));
+    }catch(e){}
   }
   let selected = loadSelected();
   let selectMode = false;
@@ -1827,7 +1958,7 @@
     const groups = groupByCategory();
     return `
       <section class="cover ${current==='toc'?'active':''}">
-        <h2 class="cover-title">תוכן העניינים</h2>
+        <h2 class="cover-title print-only">ספר המתכונים של עדן ומתן</h2>
         ${selectMode ? '<p class="cover-hint">סמנו וי ליד מתכונים שמכינים כדי להוסיף אותם לרשימת הקניות</p>' : ''}
         ${Object.keys(groups).map(cat => `
           <div class="toc-section">
@@ -1955,7 +2086,7 @@
   function renderShoppingPage(){
     let inner;
     if(selected.size === 0){
-      inner = '<p class="shopping-empty">עוד לא סימנתן מתכונים. חזרו לתוכן העניינים וסמנו וי ליד מתכונים כדי להוסיף אותם לרשימה.</p>';
+      inner = '<p class="shopping-empty">עוד לא סימנתן מתכונים. חזרו לרשימת המתכונים וסמנו וי ליד מתכונים כדי להוסיף אותם לרשימה.</p>';
     } else {
       const order = [...selected].sort((a,b) => a - b);
       let checklistHtml, copyText;
@@ -1998,7 +2129,7 @@
     }
     return `
       <section class="shopping-page ${current==='shopping'?'active':''}">
-        <button class="back-to-list" onclick="showToc()">→ חזרה לתוכן העניינים</button>
+        <button class="back-to-list" onclick="showToc()">→ חזרה לרשימת המתכונים</button>
         <h2>רשימת קניות</h2>
         ${selectMode ? '<button class="finish-select-btn" onclick="finishSelecting()">✓ סיימתי - נקו את הבחירה</button>' : ''}
         ${inner}
@@ -2006,12 +2137,11 @@
     `;
   }
 
-  function renderPage(){
-    const container = document.getElementById('pageContent');
-    container.innerHTML = renderCover() + renderShoppingPage() + recipes.map((r,i) => `
-      <article class="recipe ${i===current?'active':''}" data-index="${i}" id="recipe-${i}">
-        <button class="back-to-list" onclick="showToc()">→ חזרה לתוכן העניינים</button>
-        <div class="chapter-num">${pad(i)}</div>
+  function renderRecipeArticle(r, o){
+    return `
+      <article class="${o.cls}${o.active ? ' active' : ''}" id="${o.id}">
+        ${o.back}
+        ${o.badge}
         <h2>${r.title}</h2>
         ${r.time ? `<p class="prep-time">⏱ זמן הכנה כולל: ${r.time}</p>` : ''}
         <div class="meta-row">
@@ -2038,13 +2168,72 @@
             <h3>הערות, הארות ותוספות</h3>
             <ul>${r.notes.map(n => `<li>${n}</li>`).join('')}</ul>
           </div>` : ''}
+        ${o.footer || ''}
       </article>
-    `).join('');
+    `;
+  }
+
+  function renderTryPage(){
+    const pending = pendingTry();
+    const list = pending.length ? `
+      <ul class="toc-entries">
+        ${pending.map(({ r, idx }) => `
+          <li class="toc-entry-row">
+            <a class="toc-entry" href="#try-${idx}" onclick="showTryRecipe(${idx}); return false;">
+              <span class="e-title">${r.title}</span>
+              <span class="e-leader"></span>
+              <span class="try-cat">${r.category}</span>
+            </a>
+          </li>
+        `).join('')}
+      </ul>` : '<p class="shopping-empty">עוד אין מתכונים ברשימה.</p>';
+    return `
+      <section class="try-page ${current==='try'?'active':''}">
+        <button class="back-to-list" onclick="showToc()">→ חזרה לרשימת המתכונים</button>
+        <h2 class="cover-title">מתכונים לנסות</h2>
+        <p class="cover-hint">מתכונים שעוד לא ניסיתם. אחרי שניסיתם, אם אהבתם, אפשר לסמן וזה יעבור לספר המתכונים.</p>
+        ${list}
+      </section>
+    `;
+  }
+
+  function updateTryCount(){
+    const el = document.getElementById('tryCount');
+    if(el){
+      const n = pendingTry().length;
+      el.textContent = n ? ` (${n})` : '';
+    }
+  }
+
+  function renderPage(){
+    const container = document.getElementById('pageContent');
+    const bookHtml = recipes.map((r, i) => renderRecipeArticle(r, {
+      cls: 'recipe',
+      id: `recipe-${i}`,
+      active: i === current,
+      back: '<button class="back-to-list" onclick="showToc()">→ חזרה לרשימת המתכונים</button>',
+      badge: `<div class="chapter-num">${pad(i)}</div>`,
+      footer: ''
+    })).join('');
+    const tryHtml = tryRecipes.map((r, idx) => promoted.has(r.title) ? '' : renderRecipeArticle(r, {
+      cls: 'recipe try-recipe',
+      id: `try-${idx}`,
+      active: current === 'tryRecipe' && currentTry === idx,
+      back: '<button class="back-to-list" onclick="showTryList()">→ חזרה למתכונים לנסות</button>',
+      badge: '<div class="try-badge">לנסות</div>',
+      footer: `
+        <div class="try-actions">
+          <button class="try-like-btn" onclick="promoteTry(${idx})">✓ ניסיתי ואהבתי - הוסיפו לספר המתכונים</button>
+          <p class="try-note">ההוספה לספר נשמרת במכשיר הזה.</p>
+        </div>`
+    })).join('');
+    container.innerHTML = renderCover() + renderShoppingPage() + renderTryPage() + bookHtml + tryHtml;
+    updateTryCount();
   }
 
   function renderPageNav(){
     const nav = document.getElementById('pageNav');
-    if(current === 'toc' || current === 'shopping'){
+    if(typeof current !== 'number'){
       nav.className = 'page-nav empty';
       nav.innerHTML = '';
       return;
@@ -2087,6 +2276,40 @@
     renderPage();
     renderPageNav();
     scrollContentToTop();
+  }
+
+  function showTryList(){
+    current = 'try';
+    currentTry = null;
+    renderToc();
+    renderPage();
+    renderPageNav();
+    scrollContentToTop();
+  }
+
+  function showTryRecipe(idx){
+    if(!tryRecipes[idx]) return;
+    current = 'tryRecipe';
+    currentTry = idx;
+    renderToc();
+    renderPage();
+    renderPageNav();
+    scrollContentToTop();
+  }
+
+  // "Tried it and liked it" - moves the recipe into the book (by its category).
+  function promoteTry(idx){
+    const r = tryRecipes[idx];
+    if(!r) return;
+    // keep the shopping-list selection pointing at the same recipes after the book is rebuilt
+    const selectedTitles = [...selected].map(i => recipes[i] && recipes[i].title).filter(Boolean);
+    promoted.add(r.title);
+    savePromoted();
+    rebuildRecipes();
+    selected = new Set(selectedTitles.map(t => recipes.findIndex(x => x.title === t)).filter(i => i >= 0));
+    saveSelected();
+    updateShoppingCount();
+    showRecipe(recipes.findIndex(x => x.title === r.title));
   }
 
   function handleShoppingFabClick(){
