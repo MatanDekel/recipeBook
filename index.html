@@ -1205,6 +1205,44 @@
   @media print{
     #editHost, .custom-actions, .empty-book{ display:none !important; }
   }
+
+  /* ---------- Family: onboarding, settings ---------- */
+  #gateBody{ display:flex; flex-direction:column; gap:12px; margin-top:4px; text-align:right; }
+  #gateBody input[type=text]{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--tan);
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-size:0.95rem;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  #gateBody input[type=text]:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .gate-note{ font-size:0.85rem; color:var(--ink-soft); margin:0; line-height:1.5; }
+  .gate-link{
+    align-self:center;
+    background:none;
+    border:none;
+    padding:0;
+    color:var(--accent-deep);
+    font-family:'Assistant', sans-serif;
+    font-size:0.85rem;
+    text-decoration:underline;
+    cursor:pointer;
+  }
+  .settings-page{ animation: pageIn 0.35s ease; }
+  .member-row{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px solid var(--paper-deep);
+    font-size:0.9rem;
+  }
+  .member-row:last-child{ border-bottom:none; }
+  .member-email{ flex:1; color:var(--ink-soft); font-size:0.8rem; word-break:break-all; }
+  .member-role{ color:var(--sage); font-size:0.78rem; white-space:nowrap; }
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -1217,6 +1255,7 @@
       <h2 class="auth-title">ספר המתכונים</h2>
       <p class="auth-sub" id="authSub">טוענים...</p>
       <button type="button" class="auth-submit auth-google" id="googleBtn" onclick="signInWithGoogle()" style="display:none">התחברות עם Google</button>
+      <div id="gateBody"></div>
       <p class="auth-error" id="authError"></p>
     </div>
   </div>
@@ -1234,6 +1273,9 @@
     <button class="menu-item" role="menuitem" onclick="menuGoAdd()">
       <span class="menu-icon">➕</span><span>הוספת מתכון</span>
     </button>
+    <button class="menu-item" role="menuitem" onclick="menuGoSettings()">
+      <span class="menu-icon">⚙️</span><span>הגדרות הספר</span>
+    </button>
     <div class="menu-user">
       <span id="menuUser"></span>
       <button class="menu-logout" onclick="menuLogout()">התנתקות</button>
@@ -1242,7 +1284,7 @@
 
   <nav class="toc" aria-label="רשימת מתכונים">
     <button class="toc-brand" onclick="showToc()">
-      <h1>ספר המתכונים</h1>
+      <h1 id="brandName">ספר המתכונים</h1>
       <p class="sub" id="brandSub"></p>
     </button>
     <ul class="toc-list" id="tocList"></ul>
@@ -2115,35 +2157,32 @@
   ];
 
   // ---------- Who is using the book ----------
-  // The owners see the built-in recipes. They are stored as SHA-256 hashes of the e-mail address,
-  // so the addresses themselves are not sitting in the page source.
+  // The built-in recipes (the ones written into this file) belong to the book that Eden or Matan creates.
+  // We recognise them by a SHA-256 hash of the e-mail address, so the addresses themselves are not
+  // sitting in the page source. Everyone else starts with an empty book of their own.
   const OWNER_HASHES = [
     '323ba53e7e4910088172d3c85c662e137216d3b38abd0d89ad9d86cca698c3ff',
     '44f121df88d654d14b526d36d61103a79d617e09475f0837f231b0c267927f2c'
   ];
   let currentUser = null;
-  let isOwner = false;
-  let workspaceId = 'anon';   // 'owners' = the shared owners' book, otherwise the user's uid
-  let bookLabel = '';
-  let customRecipes = [];     // recipes added through the site (saved in Firestore)
+  let familyId = '';          // the book (family) the signed-in user belongs to
+  let family = null;          // its Firestore document: { name, ownerUid, inviteCode, builtIn }
+  let hasBuiltIn = false;     // does this book include the recipes written into this file?
+  let bookLabel = '';         // the name the family chose for its book
+  let customRecipes = [];     // recipes added through the site (saved in Firestore, shared by the family)
 
-  // Local (per-browser) state is kept separately for every book.
-  // The owners' book keeps the original key names, so existing marks are not lost.
+  // Per-device state (shopping list selection etc.) is kept separately for every book.
   function lsKey(base){
-    return workspaceId === 'owners' ? base : base + ':' + workspaceId;
+    return base + ':' + (familyId || 'none');
   }
 
-  const PROMOTED_KEY = 'recipebook_promoted';
-  function loadPromoted(){
-    try{
-      const raw = localStorage.getItem(lsKey(PROMOTED_KEY));
-      return raw ? new Set(JSON.parse(raw)) : new Set();
-    }catch(e){ return new Set(); }
-  }
-  function savePromoted(){
-    try{ localStorage.setItem(lsKey(PROMOTED_KEY), JSON.stringify([...promoted])); }catch(e){}
-  }
+  // "Tried it and liked it" marks - shared by the whole family (families/{id}/state/main)
   let promoted = new Set();
+  function savePromoted(){
+    if(!fbDb || !familyId) return;
+    stateRef().set({ promoted: [...promoted] }, { merge: true })
+      .catch(e => console.error('Could not save the marks', e));
+  }
 
   // The book = base recipes + try-recipes that were marked "liked", grouped by category.
   // Order of the categories in the book (meal order). A category that is not listed
@@ -2156,7 +2195,7 @@
   let recipes = [];
   function rebuildRecipes(){
     // owners: built-in recipes (+ try-recipes marked "liked"); everyone: their own added recipes
-    const builtIn = isOwner ? baseRecipes.concat(tryRecipes.filter(r => promoted.has(r.title))) : [];
+    const builtIn = hasBuiltIn ? baseRecipes.concat(tryRecipes.filter(r => promoted.has(r.title))) : [];
     const custom = customRecipes.slice().sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
     const combined = builtIn.concat(custom);
     const order = CATEGORY_ORDER.slice();
@@ -2168,7 +2207,7 @@
   }
 
   function pendingTry(){
-    if(!isOwner) return [];
+    if(!hasBuiltIn) return [];
     return tryRecipes.map((r, idx) => ({ r, idx })).filter(x => !promoted.has(x.r.title));
   }
 
@@ -2271,7 +2310,7 @@
     const empty = recipes.length === 0;
     return `
       <section class="cover ${current==='toc'?'active':''}">
-        <h2 class="cover-title print-only">ספר המתכונים ${escapeHtml(bookLabel)}</h2>
+        <h2 class="cover-title print-only">${escapeHtml(bookLabel)}</h2>
         ${empty ? `
         <div class="empty-book">
           <p>הספר שלך עוד ריק.</p>
@@ -2458,17 +2497,19 @@
 
 
   /* ---------- Nutrition (rough estimates, per recipe) ---------- */
-  const SERVINGS_KEY = 'recipebook_servings';
-  function loadServings(){
-    try{
-      const raw = localStorage.getItem(lsKey(SERVINGS_KEY));
-      const o = raw ? JSON.parse(raw) : {};
-      return (o && typeof o === 'object') ? o : {};
-    }catch(e){ return {}; }
-  }
+  // Number of servings per recipe - shared by the whole family (families/{id}/state/main)
   let servingsMap = {};
+  let servingsDirty = false;
+  let servingsSaveTimer = null;
   function saveServings(){
-    try{ localStorage.setItem(lsKey(SERVINGS_KEY), JSON.stringify(servingsMap)); }catch(e){}
+    servingsDirty = true;
+    clearTimeout(servingsSaveTimer);
+    servingsSaveTimer = setTimeout(() => {
+      servingsDirty = false;
+      if(!fbDb || !familyId) return;
+      stateRef().set({ servings: servingsMap }, { merge: true })
+        .catch(e => console.error('Could not save the servings', e));
+    }, 600);
   }
   function getServings(title){
     const n = Number(servingsMap[title]);
@@ -2622,8 +2663,9 @@
     const container = document.getElementById('pageContent');
     const host = document.getElementById('editHost');
     if(host){
-      if(current !== 'edit') host.innerHTML = '';
-      host.style.display = current === 'edit' ? '' : 'none';
+      const hostView = current === 'edit' || current === 'settings';
+      if(!hostView) host.innerHTML = '';
+      host.style.display = hostView ? '' : 'none';
     }
     const bookHtml = recipes.map((r, i) => renderRecipeArticle(r, {
       cls: 'recipe',
@@ -2633,7 +2675,7 @@
       badge: `<div class="chapter-num">${pad(i)}</div>`,
       footer: r.custom ? customActionsHtml(r) : ''
     })).join('');
-    const tryHtml = (isOwner ? tryRecipes : []).map((r, idx) => promoted.has(r.title) ? '' : renderRecipeArticle(r, {
+    const tryHtml = (hasBuiltIn ? tryRecipes : []).map((r, idx) => promoted.has(r.title) ? '' : renderRecipeArticle(r, {
       cls: 'recipe try-recipe',
       id: `try-${idx}`,
       active: current === 'tryRecipe' && currentTry === idx,
@@ -2790,10 +2832,19 @@
   });
 
   /* ---------- Sign-in (Firebase Auth with Google) ---------- */
-  // Fill in from: Firebase console > Project settings > Your apps > Web app > SDK setup and configuration
+  // On iPhone (and home-screen apps) sign in through this site's own domain, which vercel.json proxies
+  // to Firebase: Safari blocks the cross-site storage that the default firebaseapp.com domain needs.
+  // Everywhere else the default domain is kept, so desktop sign-in does not depend on that setup.
+  const FIREBASE_DEFAULT_AUTH_DOMAIN = 'reciply-app-b2b5a.firebaseapp.com';
+  function siteAuthDomain(){
+    const h = window.location.hostname;
+    if(!isIOSOrStandalone()) return FIREBASE_DEFAULT_AUTH_DOMAIN;
+    if(!h || h === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(h) || /(firebaseapp\.com|web\.app)$/.test(h)) return FIREBASE_DEFAULT_AUTH_DOMAIN;
+    return h;
+  }
   const FIREBASE_CONFIG = {
     apiKey: 'AIzaSyCoulI651hNc58LljdrhrGHIUMBaAM0f-A',
-    authDomain: 'reciply-app-b2b5a.firebaseapp.com',
+    authDomain: siteAuthDomain(),
     projectId: 'reciply-app-b2b5a',
     storageBucket: 'reciply-app-b2b5a.firebasestorage.app',
     messagingSenderId: '720618893853',
@@ -2802,17 +2853,22 @@
 
   let fbAuth = null;
   let fbDb = null;
-  let unsubscribeRecipes = null;
+  let unsubs = [];
   let authRun = 0;
   let appReady = false;
   let editingId = null;
+  let pendingJoin = null;
+  let membersCache = null;
 
   function showAuthScreen(sub, showButton, errorText){
     document.body.classList.add('auth-locked');
     document.getElementById('authOverlay').style.display = 'flex';
     document.getElementById('authSub').textContent = sub;
-    document.getElementById('googleBtn').style.display = showButton ? '' : 'none';
+    const btn = document.getElementById('googleBtn');
+    btn.style.display = showButton ? '' : 'none';
+    btn.disabled = false;
     document.getElementById('authError').textContent = errorText || '';
+    document.getElementById('gateBody').innerHTML = '';
   }
 
   function hideAuthScreen(){
@@ -2824,11 +2880,14 @@
     const code = err && err.code ? err.code : '';
     if(code === 'auth/unauthorized-domain') return 'הדומיין הזה עוד לא מאושר ב-Firebase (Authentication ← Settings ← Authorized domains).';
     if(code === 'auth/network-request-failed') return 'אין חיבור לאינטרנט. נסו שוב.';
+    if(code === 'permission-denied') return 'אין הרשאה. בדקו שהכללים של Firestore הוגדרו.';
     return 'ההתחברות נכשלה' + (code ? ' (' + code + ')' : '') + '.';
   }
 
   function showAuthError(err){
     console.error(err);
+    const btn = document.getElementById('googleBtn');
+    if(btn) btn.disabled = false;
     document.getElementById('authError').textContent = authErrorText(err);
   }
 
@@ -2842,17 +2901,31 @@
     catch(e){ console.warn('Could not check owner e-mail', e); return false; }
   }
 
-  function recipesCollection(){
-    return fbDb.collection('books').doc(workspaceId).collection('recipes');
+  function randomCode(len){
+    const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+    const bytes = crypto.getRandomValues(new Uint8Array(len));
+    return Array.from(bytes).map(b => chars[b % chars.length]).join('');
+  }
+
+  const famRef = fid => fbDb.collection('families').doc(fid);
+  function recipesCollection(){ return famRef(familyId).collection('recipes'); }
+  function stateRef(){ return famRef(familyId).collection('state').doc('main'); }
+
+  function stopListeners(){
+    unsubs.forEach(u => { try{ u(); }catch(e){} });
+    unsubs = [];
   }
 
   function clearApp(){
     recipes = [];
     customRecipes = [];
-    isOwner = false;
-    workspaceId = 'anon';
+    familyId = '';
+    family = null;
+    hasBuiltIn = false;
     currentUser = null;
     bookLabel = '';
+    membersCache = null;
+    pendingJoin = null;
     selected = new Set();
     ownedItems = new Set();
     promoted = new Set();
@@ -2867,14 +2940,22 @@
       if(el) el.innerHTML = '';
     });
     document.getElementById('pageNav').className = 'page-nav empty';
+    document.getElementById('brandName').textContent = 'ספר המתכונים';
+    document.title = 'ספר המתכונים';
     toggleMenu(false);
+  }
+
+  function applyBrand(){
+    const name = bookLabel || 'ספר המתכונים';
+    document.getElementById('brandName').textContent = name;
+    document.title = name;
   }
 
   function enterApp(){
     appReady = true;
     hideAuthScreen();
-    document.getElementById('brandSub').textContent = bookLabel;
-    document.getElementById('menuTryItem').style.display = isOwner ? '' : 'none';
+    applyBrand();
+    document.getElementById('menuTryItem').style.display = hasBuiltIn ? '' : 'none';
     document.getElementById('menuUser').textContent = currentUser ? (currentUser.email || '') : '';
     renderToc();
     renderPage();
@@ -2892,6 +2973,7 @@
       const ni = curTitle === null ? -1 : recipes.findIndex(x => x.title === curTitle);
       current = ni >= 0 ? ni : 'toc';
     }
+    if(current === 'tryRecipe' && (!tryRecipes[currentTry] || promoted.has(tryRecipes[currentTry].title))) current = 'try';
     if(!appReady) return;
     renderToc();
     renderPage();
@@ -2899,40 +2981,239 @@
     updateShoppingCount();
   }
 
-  function startRecipesListener(onFirst){
-    let first = true;
-    const handle = list => {
-      customRecipes = list;
-      if(first){ first = false; onFirst(); }
-      else refreshBook();
-    };
-    unsubscribeRecipes = recipesCollection().onSnapshot(
-      snap => handle(snap.docs.map(d => Object.assign({}, d.data(), { id: d.id, custom: true }))),
-      err => { console.error('Could not load saved recipes:', err); handle([]); }
-    );
+  /* ----- state shared by the family: "liked" marks and servings ----- */
+  function setsEqual(a, b){
+    if(a.size !== b.size) return false;
+    for(const x of a) if(!b.has(x)) return false;
+    return true;
+  }
+
+  function refreshNutritionBlocks(){
+    document.querySelectorAll('.nutrition').forEach(b => {
+      const s = getServings(b.dataset.title);
+      nutFill(b, s);
+      const inp = b.querySelector('input[type=number]');
+      if(inp && document.activeElement !== inp) inp.value = s;
+    });
+  }
+
+  function applyState(data, isFirst){
+    const newPromoted = new Set(Array.isArray(data.promoted) ? data.promoted : []);
+    const newServ = (data.servings && typeof data.servings === 'object') ? data.servings : {};
+    const promotedChanged = !setsEqual(newPromoted, promoted);
+    promoted = newPromoted;
+    if(!servingsDirty) servingsMap = Object.assign({}, newServ);   // keep what is still being typed here
+    if(isFirst) return;
+    if(promotedChanged) refreshBook(); else refreshNutritionBlocks();
+  }
+
+  /* ----- the family (shared book) ----- */
+  function readJoinParam(){
+    try{
+      const v = new URLSearchParams(window.location.search).get('join') || '';
+      const m = /^([A-Za-z0-9]{10,40})\.([A-Za-z0-9]{6,40})$/.exec(v);
+      return m ? { fid: m[1], code: m[2] } : null;
+    }catch(e){ return null; }
+  }
+
+  function clearJoinParam(){
+    try{
+      const u = new URL(window.location.href);
+      u.searchParams.delete('join');
+      window.history.replaceState(null, '', u.pathname + (u.search || '') + u.hash);
+    }catch(e){}
+  }
+
+  async function resetUserFamily(user){
+    try{ await fbDb.collection('users').doc(user.uid).set({ familyId: null }, { merge: true }); }catch(e){}
   }
 
   async function onUserChanged(user){
     const run = ++authRun;
-    if(unsubscribeRecipes){ unsubscribeRecipes(); unsubscribeRecipes = null; }
+    stopListeners();
     clearApp();
     if(!user){ showAuthScreen('התחברו כדי להמשיך', true); return; }
-    showAuthScreen('טוענים...', false);
-    const owner = user.emailVerified !== false && await isOwnerEmail((user.email || '').toLowerCase());
-    if(run !== authRun) return;
     currentUser = user;
-    isOwner = owner;
-    workspaceId = owner ? 'owners' : user.uid;
-    bookLabel = owner ? 'של עדן ומתן' : (user.displayName ? 'של ' + user.displayName : '');
-    promoted = loadPromoted();
-    ownedItems = loadOwned();
-    servingsMap = loadServings();
-    startRecipesListener(() => {
+    showAuthScreen('טוענים...', false);
+    try{
+      const usnap = await fbDb.collection('users').doc(user.uid).get();
       if(run !== authRun) return;
+      const fid = usnap.exists ? (usnap.data().familyId || null) : null;
+      const join = readJoinParam();
+      if(join && join.fid !== fid){ showJoinConfirm(join, fid); return; }
+      if(join) clearJoinParam();
+      if(!fid){ await showCreateFamily(run); return; }
+      await openFamily(fid, run);
+    }catch(err){
+      if(run !== authRun) return;
+      console.error(err);
+      showAuthScreen('לא הצלחנו לטעון את הספר.', false, authErrorText(err));
+      document.getElementById('gateBody').innerHTML = '<button type="button" class="auth-submit" onclick="window.location.reload()">ניסיון נוסף</button><button type="button" class="gate-link" onclick="menuLogout()">התנתקות</button>';
+    }
+  }
+
+  async function openFamily(fid, run){
+    let fsnap;
+    try{
+      fsnap = await famRef(fid).get();
+    }catch(err){
+      if(err && err.code === 'permission-denied'){   // not (or no longer) a member
+        await resetUserFamily(currentUser);
+        if(run !== authRun) return;
+        await showCreateFamily(run);
+        return;
+      }
+      throw err;
+    }
+    if(run !== authRun) return;
+    if(!fsnap.exists){
+      await resetUserFamily(currentUser);
+      if(run !== authRun) return;
+      await showCreateFamily(run);
+      return;
+    }
+    familyId = fid;
+    family = fsnap.data();
+    hasBuiltIn = !!family.builtIn;
+    bookLabel = family.name || 'ספר המתכונים';
+
+    let pending = 2;
+    const loaded = () => {
+      if(--pending > 0 || run !== authRun) return;
+      ownedItems = loadOwned();
       rebuildRecipes();
       selected = loadSelected();
       enterApp();
-    });
+    };
+    let firstRec = true, firstState = true, firstFam = true;
+
+    unsubs.push(famRef(fid).onSnapshot(snap => {
+      if(!snap.exists) return;
+      const changed = !family || snap.data().name !== family.name || snap.data().inviteCode !== family.inviteCode;
+      family = snap.data();
+      bookLabel = family.name || 'ספר המתכונים';
+      if(firstFam){ firstFam = false; return; }
+      if(appReady && changed){
+        applyBrand();
+        if(current !== 'settings') renderPage();
+      }
+    }, err => console.error('family listener', err)));
+
+    unsubs.push(recipesCollection().onSnapshot(snap => {
+      customRecipes = snap.docs.map(d => Object.assign({}, d.data(), { id: d.id, custom: true }));
+      if(firstRec){ firstRec = false; loaded(); } else refreshBook();
+    }, err => {
+      console.error('Could not load the recipes', err);
+      customRecipes = [];
+      if(firstRec){ firstRec = false; loaded(); } else refreshBook();
+    }));
+
+    unsubs.push(stateRef().onSnapshot(snap => {
+      applyState(snap.exists ? snap.data() : {}, firstState);
+      if(firstState){ firstState = false; loaded(); }
+    }, err => {
+      console.error('Could not load the shared state', err);
+      if(firstState){ firstState = false; loaded(); }
+    }));
+  }
+
+  async function showCreateFamily(run){
+    const user = currentUser;
+    const owner = await isOwnerEmail((user.email || '').toLowerCase());
+    if(run !== authRun) return;
+    const first = (user.displayName || '').trim().split(' ')[0];
+    const def = owner ? 'ספר המתכונים של עדן ומתן' : (first ? 'ספר המתכונים של ' + first : 'ספר המתכונים שלי');
+    showAuthScreen('ברוכים הבאים! בואו ניצור את ספר המתכונים שלכם', false);
+    document.getElementById('gateBody').innerHTML = `
+      <label class="f-label">איך תרצו לקרוא לספר?
+        <input type="text" id="gateName" value="${attr(def)}" maxlength="60">
+      </label>
+      <button type="button" class="auth-submit" id="gateCreate" onclick="createFamily()">יצירת הספר</button>
+      <p class="gate-note">הוזמנתם לספר של מישהו? פתחו שוב את קישור ההזמנה שקיבלתם.</p>
+      <button type="button" class="gate-link" onclick="menuLogout()">התנתקות</button>`;
+  }
+
+  async function createFamily(){
+    const user = currentUser;
+    if(!user) return;
+    const run = authRun;
+    const btn = document.getElementById('gateCreate');
+    btn.disabled = true;
+    document.getElementById('authError').textContent = '';
+    const name = (document.getElementById('gateName').value || '').trim().slice(0, 60) || 'ספר המתכונים שלי';
+    try{
+      const fid = fbDb.collection('families').doc().id;
+      const builtIn = await isOwnerEmail((user.email || '').toLowerCase());
+      await famRef(fid).set({ name, ownerUid: user.uid, inviteCode: randomCode(12), builtIn, createdAt: Date.now() });
+      await famRef(fid).collection('members').doc(user.uid).set({
+        name: user.displayName || user.email || '', email: user.email || '', role: 'owner', joinedAt: Date.now()
+      });
+      await fbDb.collection('users').doc(user.uid).set({
+        familyId: fid, name: user.displayName || '', email: user.email || ''
+      }, { merge: true });
+      if(run !== authRun) return;
+      await openFamily(fid, run);
+    }catch(err){
+      console.error(err);
+      document.getElementById('authError').textContent = 'יצירת הספר נכשלה (' + (err.code || err.message) + '). בדקו שהכללים של Firestore הוגדרו.';
+      btn.disabled = false;
+    }
+  }
+
+  function showJoinConfirm(join, currentFid){
+    pendingJoin = { join, currentFid };
+    showAuthScreen('הוזמנתם להצטרף לספר מתכונים משפחתי', false);
+    document.getElementById('gateBody').innerHTML = `
+      <p class="gate-note">${currentFid ? 'אם תצטרפו, תעזבו את הספר הנוכחי שלכם.' : 'תוכלו לראות ולערוך יחד את כל המתכונים.'}</p>
+      <button type="button" class="auth-submit" id="gateJoin" onclick="confirmJoin()">הצטרפות לספר</button>
+      <button type="button" class="gate-link" onclick="cancelJoin()">לא עכשיו</button>`;
+  }
+
+  async function confirmJoin(){
+    const user = currentUser;
+    if(!user || !pendingJoin) return;
+    const run = authRun;
+    const { join, currentFid } = pendingJoin;
+    const btn = document.getElementById('gateJoin');
+    btn.disabled = true;
+    document.getElementById('authError').textContent = '';
+    try{
+      await famRef(join.fid).collection('members').doc(user.uid).set({
+        name: user.displayName || user.email || '', email: user.email || '', role: 'member', code: join.code, joinedAt: Date.now()
+      });
+    }catch(err){
+      console.error(err);
+      document.getElementById('authError').textContent = (err && err.code === 'permission-denied')
+        ? 'קישור ההזמנה לא תקין או שפג תוקפו.' : 'ההצטרפות נכשלה (' + (err.code || err.message) + ').';
+      btn.disabled = false;
+      return;
+    }
+    try{
+      if(currentFid && currentFid !== join.fid){
+        try{ await famRef(currentFid).collection('members').doc(user.uid).delete(); }catch(e){}
+      }
+      await fbDb.collection('users').doc(user.uid).set({
+        familyId: join.fid, name: user.displayName || '', email: user.email || ''
+      }, { merge: true });
+      pendingJoin = null;
+      clearJoinParam();
+      if(run !== authRun) return;
+      await openFamily(join.fid, run);
+    }catch(err){
+      console.error(err);
+      document.getElementById('authError').textContent = 'ההצטרפות נכשלה (' + (err.code || err.message) + ').';
+      btn.disabled = false;
+    }
+  }
+
+  async function cancelJoin(){
+    const run = authRun;
+    const cur = pendingJoin ? pendingJoin.currentFid : null;
+    pendingJoin = null;
+    clearJoinParam();
+    try{
+      if(cur) await openFamily(cur, run); else await showCreateFamily(run);
+    }catch(err){ console.error(err); }
   }
 
   function initFirebase(){
@@ -2948,6 +3229,8 @@
       firebase.initializeApp(FIREBASE_CONFIG);
       fbAuth = firebase.auth();
       fbDb = firebase.firestore();
+      // Long polling avoids the hanging connections Safari / iPhone home-screen apps sometimes get
+      try{ fbDb.settings({ experimentalForceLongPolling: true, merge: true }); }catch(e){ console.warn(e); }
     }catch(e){
       console.error(e);
       showAuthScreen('אירעה שגיאה באתחול ההתחברות.', false);
@@ -2957,11 +3240,24 @@
     fbAuth.onAuthStateChanged(onUserChanged);
   }
 
+  function isIOSOrStandalone(){
+    const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone;
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    return !!(standalone || ios);
+  }
+
   function signInWithGoogle(){
     if(!fbAuth) return;
+    const btn = document.getElementById('googleBtn');
     document.getElementById('authError').textContent = '';
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
+    // iPhone and home-screen apps can't use pop-ups reliably, so they use a full-page redirect
+    if(isIOSOrStandalone()){
+      btn.disabled = true;
+      fbAuth.signInWithRedirect(provider).catch(showAuthError);
+      return;
+    }
     fbAuth.signInWithPopup(provider).catch(err => {
       if(err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment'){
         fbAuth.signInWithRedirect(provider).catch(showAuthError);
@@ -2976,9 +3272,105 @@
     showEditForm(null);
   }
 
+  function menuGoSettings(){
+    toggleMenu(false);
+    showSettings();
+  }
+
   function menuLogout(){
     toggleMenu(false);
     if(fbAuth) fbAuth.signOut();
+  }
+
+  /* ---------- Book settings: name, invite link, members ---------- */
+  function inviteLink(){
+    if(!family || !family.inviteCode || !familyId) return '';
+    return window.location.origin + window.location.pathname + '?join=' + familyId + '.' + family.inviteCode;
+  }
+
+  function membersHtml(){
+    if(!membersCache) return '<p class="gate-note">טוענים...</p>';
+    return membersCache.map(m => `
+      <div class="member-row">
+        <span>${escapeHtml(m.name || m.email || '')}</span>
+        <span class="member-email">${escapeHtml(m.email || '')}</span>
+        <span class="member-role">${m.role === 'owner' ? 'יוצר/ת הספר' : 'חבר/ה'}</span>
+      </div>`).join('');
+  }
+
+  function renderSettings(){
+    return `
+      <section class="settings-page">
+        <button class="back-to-list" onclick="showToc()">→ חזרה לרשימת המתכונים</button>
+        <h2 class="edit-title">הגדרות הספר</h2>
+        <div class="recipe-form">
+          <label class="f-label">שם הספר
+            <input type="text" id="sName" value="${attr(bookLabel)}" maxlength="60">
+          </label>
+          <div class="f-actions"><button type="button" class="f-save" onclick="saveBookName()">שמירת השם</button></div>
+          <p class="f-error" id="sMsg"></p>
+          <fieldset class="f-set">
+            <legend>הזמנת בני משפחה</legend>
+            <p class="gate-note">שלחו את הקישור. מי שיפתח אותו ויתחבר עם גוגל יצטרף לספר, וכל השינויים יופיעו אצל כולם.</p>
+            <input type="text" id="sLink" readonly value="${attr(inviteLink())}">
+            <div class="f-actions">
+              <button type="button" class="f-cancel" onclick="copyInviteLink()">העתקת הקישור</button>
+              ${navigator.share ? '<button type="button" class="f-cancel" onclick="shareInviteLink()">שיתוף</button>' : ''}
+            </div>
+          </fieldset>
+          <fieldset class="f-set">
+            <legend>חברים בספר</legend>
+            <div id="sMembers">${membersHtml()}</div>
+          </fieldset>
+        </div>
+      </section>`;
+  }
+
+  function showSettings(){
+    current = 'settings';
+    document.getElementById('editHost').innerHTML = renderSettings();
+    renderToc();
+    renderPage();
+    renderPageNav();
+    scrollContentToTop();
+    famRef(familyId).collection('members').get().then(snap => {
+      membersCache = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      const el = document.getElementById('sMembers');
+      if(el) el.innerHTML = membersHtml();
+    }).catch(err => console.error('Could not load the members', err));
+  }
+
+  function saveBookName(){
+    const msg = document.getElementById('sMsg');
+    const name = document.getElementById('sName').value.trim().slice(0, 60);
+    if(!name){ msg.textContent = 'צריך לתת שם לספר.'; return; }
+    msg.textContent = '';
+    famRef(familyId).update({ name }).then(() => {
+      bookLabel = name;
+      if(family) family.name = name;
+      applyBrand();
+      msg.textContent = 'נשמר ✓';
+    }).catch(err => {
+      console.error(err);
+      msg.textContent = 'השמירה נכשלה (' + (err.code || err.message) + ').';
+    });
+  }
+
+  function copyInviteLink(){
+    const input = document.getElementById('sLink');
+    const msg = document.getElementById('sMsg');
+    input.select();
+    const ok = () => { msg.textContent = 'הקישור הועתק ✓'; };
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(input.value).then(ok).catch(() => { document.execCommand('copy'); ok(); });
+      } else { document.execCommand('copy'); ok(); }
+    }catch(e){ try{ document.execCommand('copy'); ok(); }catch(e2){} }
+  }
+
+  function shareInviteLink(){
+    if(!navigator.share) return;
+    navigator.share({ title: bookLabel, text: 'הצטרפו לספר המתכונים שלנו', url: inviteLink() }).catch(() => {});
   }
 
   /* ---------- Add / edit / delete a recipe ---------- */
@@ -3107,7 +3499,7 @@
     if(!title){ errEl.textContent = 'צריך לתת שם למתכון.'; return false; }
     if(!ingredients.length){ errEl.textContent = 'צריך להוסיף לפחות מצרך אחד.'; return false; }
     const taken = recipes.some(r => r.title === title && r.id !== editingId)
-      || (isOwner && tryRecipes.some(r => r.title === title));
+      || (hasBuiltIn && tryRecipes.some(r => r.title === title));
     if(taken){ errEl.textContent = 'כבר יש מתכון בשם הזה.'; return false; }
 
     const existing = editingId ? customRecipes.find(x => x.id === editingId) : null;
@@ -3164,7 +3556,6 @@
   }
 
   initFirebase();
-
 </script>
 
 </body>
