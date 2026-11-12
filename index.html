@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Assistant:wght@300;400;500;600;700&family=Heebo:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
+    --font-display:'Frank Ruhl Libre', serif;   /* headings - one place to change the heading font */
     --paper:#FBF6EE;
     --paper-deep:#F2E9D8;
     --ink:#3A2E27;
@@ -64,7 +65,7 @@
   }
 
   .toc h1{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-size:1.5rem;
     font-weight:700;
     margin:0 0 4px;
@@ -220,7 +221,7 @@
   .cover.active{ display:block; }
 
   .cover-title{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-size:3rem;
     font-weight:900;
     margin:0 0 6px;
@@ -236,7 +237,7 @@
   .toc-section{ margin-bottom:36px; }
 
   .toc-section h3{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-size:1.15rem;
     font-weight:700;
     color:var(--sage);
@@ -354,7 +355,7 @@
   .back-to-list:hover{ color:var(--accent-deep); }
 
   .recipe h2{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-size:2.4rem;
     font-weight:700;
     margin:0 0 10px;
@@ -410,7 +411,7 @@
   }
 
   .block h3{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-size:1.1rem;
     font-weight:700;
     color:var(--accent-deep);
@@ -482,7 +483,7 @@
   }
 
   .notes h3{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-size:1rem;
     color:var(--sage);
     margin:0 0 10px;
@@ -570,7 +571,7 @@
   }
 
   .auth-title{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-size:1.6rem;
     font-weight:700;
     margin:0 0 6px;
@@ -687,7 +688,7 @@
   .shopping-page.active{ display:block; }
 
   .shopping-page h2{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-size:2.4rem;
     font-weight:700;
     margin:0 0 24px;
@@ -741,7 +742,7 @@
   }
 
   .shopping-group-title{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-size:0.95rem;
     font-weight:700;
     color:var(--accent-deep);
@@ -1008,7 +1009,7 @@
     margin-bottom:14px;
   }
   .nut-title{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-weight:700;
     font-size:1rem;
     color:var(--accent-deep);
@@ -1106,7 +1107,7 @@
 
   .edit-page{ animation: pageIn 0.35s ease; }
   .edit-title{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-size:2rem;
     font-weight:700;
     color:var(--accent-deep);
@@ -1133,7 +1134,7 @@
   .f-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .f-set{ border:1px solid var(--tan); border-radius:10px; padding:12px 14px 14px; margin:0; }
   .f-set legend{
-    font-family:'Frank Ruhl Libre', serif;
+    font-family:var(--font-display);
     font-weight:700;
     color:var(--accent-deep);
     padding:0 6px;
@@ -1243,6 +1244,86 @@
   .member-row:last-child{ border-bottom:none; }
   .member-email{ flex:1; color:var(--ink-soft); font-size:0.8rem; word-break:break-all; }
   .member-role{ color:var(--sage); font-size:0.78rem; white-space:nowrap; }
+
+  /* ---------- Filters, difficulty ---------- */
+  .filter-bar{
+    margin:0 0 26px;
+    padding:14px 16px;
+    background:var(--paper-deep);
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .filter-q{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--tan);
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-size:0.95rem;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .filter-q:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .filter-group{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .filter-label{ font-size:0.8rem; color:var(--ink-soft); min-width:70px; }
+  .chip{
+    background:var(--paper);
+    border:1px solid var(--tan);
+    color:var(--ink-soft);
+    font-family:'Assistant', sans-serif;
+    font-size:0.82rem;
+    padding:6px 14px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:background 0.2s ease, color 0.2s ease;
+  }
+  .chip.active{ background:var(--accent); border-color:var(--accent); color:var(--paper); font-weight:600; }
+  .filter-foot{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:1.3em; }
+  .filter-count{ font-size:0.8rem; color:var(--sage); margin:0; }
+  .filter-clear{
+    background:none;
+    border:none;
+    padding:0;
+    color:var(--accent-deep);
+    font-family:'Assistant', sans-serif;
+    font-size:0.82rem;
+    text-decoration:underline;
+    cursor:pointer;
+  }
+
+  .e-meta{ font-size:0.78rem; color:var(--sage); white-space:nowrap; }
+  .e-meta:empty{ display:none; }
+
+  .head-pills{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px; }
+  .head-pills .prep-time{ margin:0; }
+  .level-badge{
+    display:inline-block;
+    font-family:'Assistant', sans-serif;
+    font-size:0.85rem;
+    border-radius:6px;
+    padding:5px 12px;
+  }
+  .level-easy{ background:#E3EBDD; color:#4F6044; }
+  .level-medium{ background:#F2E6C8; color:#7A5E15; }
+  .level-hard{ background:#EFD9D9; color:#7A2D2D; }
+  .recipe-form select{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--tan);
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-size:0.95rem;
+    background:var(--paper);
+    color:var(--ink);
+  }
+
+  @media print{
+    .filter-bar, .e-meta{ display:none !important; }
+    .head-pills{ margin-bottom:10px; }
+    .level-badge{ font-size:0.7rem; padding:3px 8px; }
+  }
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -1302,6 +1383,8 @@
     {
       title: "עוגיות שוקולד צ'יפס גדולות",
       category: "קינוחים",
+      timeMin: 30,
+      difficulty: "קל",
       time: "כ-30 דקות",
       yield: "10-12 עוגיות גדולות (או 20-22 קטנות)",
       nutrition: { kcal: 3240, protein: 41, fat: 150, carbs: 429 },
@@ -1338,6 +1421,8 @@
     {
       title: "עוגת תפוזים",
       category: "קינוחים",
+      timeMin: 50,
+      difficulty: "קל",
       time: "כ-50 דקות",
       yield: "תבנית מלבנית קטנה בגודל 22X31",
       nutrition: { kcal: 3740, protein: 47, fat: 213, carbs: 418 },
@@ -1362,6 +1447,8 @@
     {
       title: "אוזני המן מבצק קקאו במילוי נוטלה ושוקולד לבן",
       category: "קינוחים",
+      timeMin: 35,
+      difficulty: "בינוני",
       time: "כ-35 דקות",
       yield: "מגש עוגיות",
       nutrition: { kcal: 4540, protein: 63, fat: 251, carbs: 542 },
@@ -1387,6 +1474,8 @@
     {
       title: "קראמבל תפוחים",
       category: "קינוחים",
+      timeMin: 50,
+      difficulty: "קל",
       time: "כ-50 דקות",
       yield: "4 מנות",
       nutrition: { kcal: 2300, protein: 19, fat: 84, carbs: 389 },
@@ -1416,6 +1505,8 @@
     {
       title: "פרגיות לעל האש",
       category: "מנות עיקריות",
+      timeMin: 120,
+      difficulty: "קל",
       time: "כשעתיים (כולל השריה במקרר)",
       yield: "כ-15 שיפודי עץ/ברזל",
       nutrition: { kcal: 2120, protein: 198, fat: 111, carbs: 69 },
@@ -1443,6 +1534,8 @@
     {
       title: "ניוקי עוף בתנור",
       category: "מנות עיקריות",
+      timeMin: 75,
+      difficulty: "קל",
       time: "כשעה ורבע",
       yield: "כמות למשפחה, לפי חבילת ניוקי של 500 גרם",
       nutrition: { kcal: 3090, protein: 134, fat: 163, carbs: 261 },
@@ -1475,6 +1568,8 @@
     {
       title: "עוף בלימון עם ברוקולי ואורז",
       category: "מנות עיקריות",
+      timeMin: 75,
+      difficulty: "בינוני",
       time: "כשעה ורבע",
       yield: "כמות למשפחה",
       nutrition: { kcal: 4540, protein: 234, fat: 179, carbs: 504 },
@@ -1514,6 +1609,8 @@
     {
       title: "פסטה היער השחור",
       category: "מנות עיקריות",
+      timeMin: 40,
+      difficulty: "קל",
       time: "כ-40 דקות",
       yield: "4 סועדים",
       nutrition: { kcal: 2460, protein: 61, fat: 126, carbs: 273 },
@@ -1541,6 +1638,7 @@
     {
       title: "שניצלים",
       category: "מנות עיקריות",
+      difficulty: "קל",
       yield: "כמות למשפחה",
       nutrition: { kcal: 1830, protein: 146, fat: 95, carbs: 93 },
       ingredients: [
@@ -1564,6 +1662,8 @@
     {
       title: "ניוקי פריזאי",
       category: "מנות עיקריות",
+      timeMin: 90,
+      difficulty: "מאתגר",
       time: "כשעה וחצי",
       yield: "כמות למשפחה",
       nutrition: { kcal: 2760, protein: 74, fat: 207, carbs: 149 },
@@ -1600,6 +1700,8 @@
     {
       title: "נודלס סינטה עם בקר וברוקולי",
       category: "מנות עיקריות",
+      timeMin: 30,
+      difficulty: "קל",
       time: "כ-30 דקות",
       yield: "כמות למשפחה",
       nutrition: { kcal: 3420, protein: 173, fat: 127, carbs: 394 },
@@ -1633,6 +1735,8 @@
     {
       title: "סופריטו בשר ותפוחי אדמה",
       category: "מנות עיקריות",
+      timeMin: 330,
+      difficulty: "קל",
       time: "כ-5-6 שעות",
       yield: "כמות למשפחה",
       nutrition: { kcal: 8470, protein: 347, fat: 677, carbs: 226 },
@@ -1663,6 +1767,8 @@
     {
       title: "עוף חמוץ מתוק",
       category: "מנות עיקריות",
+      timeMin: 40,
+      difficulty: "בינוני",
       time: "כ-40 דקות",
       yield: "כמות למשפחה",
       nutrition: { kcal: 2570, protein: 140, fat: 117, carbs: 239 },
@@ -1708,6 +1814,9 @@
     {
       title: "פילה עוף פפריקה",
       category: "מנות עיקריות",
+      timeMin: 30,
+      difficulty: "קל",
+      time: "כ-30 דקות",
       yield: "כמות למשפחה",
       nutrition: { kcal: 1610, protein: 235, fat: 56, carbs: 32 },
       ingredients: [
@@ -1732,6 +1841,8 @@
     {
       title: "קוסקוס במיקרוגל",
       category: "תוספות",
+      timeMin: 20,
+      difficulty: "קל",
       time: "כ-20 דקות",
       yield: "4 כוסות סולת",
       nutrition: { kcal: 3380, protein: 85, fat: 117, carbs: 488 },
@@ -1756,6 +1867,8 @@
     {
       title: "מטבוחה",
       category: "מנות ראשונות",
+      timeMin: 180,
+      difficulty: "קל",
       time: "כ-3 שעות",
       yield: "צנצנת גדולה",
       nutrition: { kcal: 940, protein: 17, fat: 58, carbs: 104 },
@@ -1776,6 +1889,8 @@
     {
       title: "כרובית בתנור",
       category: "מנות ראשונות",
+      timeMin: 60,
+      difficulty: "קל",
       time: "כשעה",
       yield: "כמות למשפחה",
       nutrition: { kcal: 530, protein: 16, fat: 29, carbs: 63 },
@@ -1800,6 +1915,8 @@
     {
       title: "סנייה חציל",
       category: "מנות ראשונות",
+      timeMin: 75,
+      difficulty: "בינוני",
       time: "כשעה ורבע",
       yield: "מנה ראשונה ל-2 סניות (2 חצילים)",
       nutrition: { kcal: 1120, protein: 48, fat: 82, carbs: 58 },
@@ -1829,6 +1946,8 @@
     {
       title: "ארנצ'יני",
       category: "מנות ראשונות",
+      timeMin: 90,
+      difficulty: "מאתגר",
       time: "כשעה וחצי (כולל קירור)",
       yield: "כ-10 כדורי ארנצ'יני",
       nutrition: { kcal: 2900, protein: 109, fat: 156, carbs: 267 },
@@ -1864,6 +1983,8 @@
     {
       title: "פיתות ביתיות",
       category: "לחמים",
+      timeMin: 180,
+      difficulty: "מאתגר",
       time: "כ-3 שעות (כולל תפיחה)",
       yield: "8 פיתות בינוניות (אפשר לחלק לפחות כדורים לפיתות גדולות יותר)",
       nutrition: { kcal: 4800, protein: 128, fat: 118, carbs: 799 },
@@ -1890,6 +2011,8 @@
     {
       title: "לחמניות אצבע",
       category: "לחמים",
+      timeMin: 150,
+      difficulty: "בינוני",
       time: "כ-2.5 שעות (כולל תפיחה)",
       yield: "12 לחמניות (כ-65 גרם כל אחת)",
       nutrition: { kcal: 2570, protein: 66, fat: 60, carbs: 435 },
@@ -1919,6 +2042,8 @@
     {
       title: "חלה לשבת",
       category: "לחמים",
+      timeMin: 360,
+      difficulty: "מאתגר",
       time: "כ-6 שעות (כולל תפיחה)",
       yield: "כ-16 כדורי בצק (110 גרם כל אחד)",
       nutrition: { kcal: 5050, protein: 141, fat: 131, carbs: 815 },
@@ -1953,6 +2078,8 @@
     {
       title: "פוקאצ'ה מפוצצת בועות",
       category: "לחמים",
+      timeMin: 300,
+      difficulty: "מאתגר",
       time: "כ-5 שעות (כולל תפיחות וקיפולים)",
       yield: "תבנית בגודל 33×23 ס\"מ",
       nutrition: { kcal: 2950, protein: 66, fat: 77, carbs: 492 },
@@ -1992,6 +2119,8 @@
     {
       title: "עוגת שוקולד כשרה לפסח",
       category: "כשר לפסח",
+      timeMin: 180,
+      difficulty: "קל",
       time: "כ-3 שעות (כולל צינון)",
       yield: "תבנית עגולה בקוטר 22 ס\"מ",
       nutrition: { kcal: 5590, protein: 82, fat: 387, carbs: 456 },
@@ -2023,6 +2152,8 @@
     {
       title: "קיש בטטה ובצל מקורמל",
       category: "מאפים מלוחים",
+      timeMin: 75,
+      difficulty: "בינוני",
       time: "כשעה ורבע",
       yield: "תבנית קיש אחת",
       nutrition: { kcal: 4600, protein: 94, fat: 315, carbs: 350 },
@@ -2053,6 +2184,8 @@
     {
       title: "מרק כתום",
       category: "מרקים",
+      timeMin: 40,
+      difficulty: "קל",
       time: "כ-40 דקות",
       yield: "כמות למשפחה",
       nutrition: { kcal: 930, protein: 15, fat: 46, carbs: 121 },
@@ -2085,6 +2218,8 @@
     {
       title: "מרק עדשים כתומות",
       category: "מרקים",
+      timeMin: 35,
+      difficulty: "קל",
       time: "כ-30-35 דקות",
       yield: "כמות למשפחה",
       nutrition: { kcal: 1860, protein: 97, fat: 46, carbs: 275 },
@@ -2113,6 +2248,7 @@
     {
       title: "סלט ירקות",
       category: "סלטים",
+      difficulty: "קל",
       yield: "כמות למשפחה",
       nutrition: { kcal: 500, protein: 13, fat: 22, carbs: 75 },
       ingredients: [
@@ -2132,6 +2268,7 @@
     {
       title: "סלט חסה",
       category: "סלטים",
+      difficulty: "קל",
       yield: "כמות למשפחה",
       nutrition: { kcal: 1030, protein: 39, fat: 60, carbs: 90 },
       ingredients: [
@@ -2278,9 +2415,101 @@
 
   function pad(n){ return String(n+1).padStart(2,'0'); }
 
+
+  /* ---------- Prep time, difficulty and filters ---------- */
+  const LEVELS = ['קל', 'בינוני', 'מאתגר'];
+  const LEVEL_CLASS = { 'קל': 'easy', 'בינוני': 'medium', 'מאתגר': 'hard' };
+  const TIME_FILTERS = [
+    { key: '30',   label: 'עד 30 דק׳',     max: 30 },
+    { key: '60',   label: 'עד שעה',        max: 60 },
+    { key: '120',  label: 'עד שעתיים',     max: 120 },
+    { key: '120+', label: 'יותר משעתיים',  min: 121 }
+  ];
+  let filters = { q: '', time: '', level: '' };
+
+  function getLevel(r){ return LEVELS.includes(r.difficulty) ? r.difficulty : ''; }
+
+  function hoursText(min){            // 60 -> שעה, 75 -> שעה ורבע, 90 -> שעה וחצי, 120 -> שעתיים, 180 -> 3 שעות
+    const h = Math.floor(min / 60), m = min % 60;
+    const base = h === 1 ? 'שעה' : h === 2 ? 'שעתיים' : h + ' שעות';
+    if(m === 0) return base;
+    if(m === 15) return base + ' ורבע';
+    if(m === 30) return base + ' וחצי';
+    return base + ' ו-' + m + ' דקות';
+  }
+  function durationShort(min){ return min < 60 ? min + ' דק׳' : hoursText(min); }
+  function timeText(r){
+    if(r.time) return r.time;
+    const m = Number(r.timeMin);
+    if(!(m > 0)) return '';
+    if(m < 60) return 'כ-' + m + ' דקות';
+    const t = hoursText(m);
+    return /^\d/.test(t) ? 'כ-' + t : 'כ' + t;
+  }
+
+  function filtersActive(){ return !!(filters.q.trim() || filters.time || filters.level); }
+
+  function matchesFilters(r){
+    const q = filters.q.trim().toLowerCase();
+    if(q && !String(r.title).toLowerCase().includes(q)) return false;
+    if(filters.time){
+      const f = TIME_FILTERS.find(x => x.key === filters.time);
+      const m = Number(r.timeMin);
+      if(!f || !(m > 0)) return false;           // recipes without a known time don't match a time filter
+      if(f.max !== undefined && m > f.max) return false;
+      if(f.min !== undefined && m < f.min) return false;
+    }
+    if(filters.level && getLevel(r) !== filters.level) return false;
+    return true;
+  }
+
+  function filterCountText(){
+    if(!filtersActive()) return '';
+    const n = recipes.filter(matchesFilters).length;
+    return n === 0 ? 'לא נמצאו מתכונים' : n === 1 ? 'מתכון אחד מתאים' : n + ' מתכונים מתאימים';
+  }
+
+  function filterBarHtml(){
+    const chip = (kind, val, label) =>
+      `<button type="button" class="chip${filters[kind] === val ? ' active' : ''}" onclick="setFilter('${kind}', '${val}')">${label}</button>`;
+    return `
+      <div class="filter-bar" id="filterBar">
+        <input type="search" id="filterQ" class="filter-q" placeholder="חיפוש לפי שם מתכון..." value="${attr(filters.q)}" oninput="onFilterQuery(this.value)" aria-label="חיפוש לפי שם">
+        <div class="filter-group"><span class="filter-label">זמן הכנה</span>${TIME_FILTERS.map(f => chip('time', f.key, f.label)).join('')}</div>
+        <div class="filter-group"><span class="filter-label">רמת קושי</span>${LEVELS.map(l => chip('level', l, l)).join('')}</div>
+        <div class="filter-foot"><p class="filter-count" id="filterCount">${filterCountText()}</p><button type="button" class="filter-clear" onclick="clearFilters()">ניקוי סינון</button></div>
+      </div>`;
+  }
+
+  function refreshLists(){
+    const list = document.getElementById('coverList');
+    if(list) list.innerHTML = renderCoverList();
+    const cnt = document.getElementById('filterCount');
+    if(cnt) cnt.textContent = filterCountText();
+    renderToc();
+  }
+
+  function rebuildFilterBar(){
+    const bar = document.getElementById('filterBar');
+    if(bar) bar.outerHTML = filterBarHtml();
+  }
+
+  function onFilterQuery(v){ filters.q = v; refreshLists(); }
+  function setFilter(kind, val){
+    filters[kind] = filters[kind] === val ? '' : val;
+    rebuildFilterBar();
+    refreshLists();
+  }
+  function clearFilters(){
+    filters = { q: '', time: '', level: '' };
+    rebuildFilterBar();
+    refreshLists();
+  }
+
   function groupByCategory(){
     const groups = {};
     recipes.forEach((r,i) => {
+      if(!matchesFilters(r)) return;
       const cat = r.category || 'שונות';
       if(!groups[cat]) groups[cat] = [];
       groups[cat].push(i);
@@ -2305,19 +2534,15 @@
     `).join('');
   }
 
-  function renderCover(){
+  function entryMeta(r){
+    return [r.timeMin > 0 ? durationShort(Number(r.timeMin)) : '', getLevel(r)].filter(Boolean).join(' · ');
+  }
+
+  function renderCoverList(){
     const groups = groupByCategory();
-    const empty = recipes.length === 0;
-    return `
-      <section class="cover ${current==='toc'?'active':''}">
-        <h2 class="cover-title print-only">${escapeHtml(bookLabel)}</h2>
-        ${empty ? `
-        <div class="empty-book">
-          <p>הספר שלך עוד ריק.</p>
-          <button type="button" class="f-save" onclick="showEditForm(null)">+ הוספת המתכון הראשון</button>
-        </div>` : ''}
-        ${selectMode ? '<p class="cover-hint">סמנו וי ליד מתכונים שמכינים כדי להוסיף אותם לרשימת הקניות</p>' : ''}
-        ${Object.keys(groups).map(cat => `
+    const cats = Object.keys(groups);
+    if(!cats.length) return recipes.length ? '<p class="shopping-empty">לא נמצאו מתכונים שמתאימים לסינון.</p>' : '';
+    return cats.map(cat => `
           <div class="toc-section">
             <h3>${escapeHtml(cat)}</h3>
             <ul class="toc-entries">
@@ -2328,12 +2553,27 @@
                     <span class="e-num">${pad(i)}</span>
                     <span class="e-title">${escapeHtml(recipes[i].title)}</span>
                     <span class="e-leader"></span>
+                    <span class="e-meta">${escapeHtml(entryMeta(recipes[i]))}</span>
                   </a>
                 </li>
               `).join('')}
             </ul>
           </div>
-        `).join('')}
+        `).join('');
+  }
+
+  function renderCover(){
+    const empty = recipes.length === 0;
+    return `
+      <section class="cover ${current==='toc'?'active':''}">
+        <h2 class="cover-title print-only">${escapeHtml(bookLabel)}</h2>
+        ${empty ? `
+        <div class="empty-book">
+          <p>הספר שלך עוד ריק.</p>
+          <button type="button" class="f-save" onclick="showEditForm(null)">+ הוספת המתכון הראשון</button>
+        </div>` : filterBarHtml()}
+        ${selectMode ? '<p class="cover-hint">סמנו וי ליד מתכונים שמכינים כדי להוסיף אותם לרשימת הקניות</p>' : ''}
+        <div id="coverList">${renderCoverList()}</div>
         ${selectMode ? '<button class="finish-select-btn" onclick="finishSelecting()">✓ סיימתי</button>' : ''}
         ${empty ? '' : `
         <div class="cover-footer">
@@ -2596,7 +2836,7 @@
         ${o.back}
         ${o.badge}
         <h2>${escapeHtml(r.title)}</h2>
-        ${r.time ? `<p class="prep-time">⏱ זמן הכנה כולל: ${escapeHtml(r.time)}</p>` : ''}
+        ${(timeText(r) || getLevel(r)) ? `<p class="head-pills">${timeText(r) ? `<span class="prep-time">⏱ זמן הכנה כולל: ${escapeHtml(timeText(r))}</span>` : ''}${getLevel(r) ? `<span class="level-badge level-${LEVEL_CLASS[getLevel(r)]}">רמת קושי: ${getLevel(r)}</span>` : ''}</p>` : ''}
         ${r.yield ? `<div class="meta-row">
           <span>🍽️ ${escapeHtml(r.yield)}</span>
         </div>` : ''}
@@ -2687,8 +2927,14 @@
           <p class="try-note">ההוספה לספר נשמרת במכשיר הזה.</p>
         </div>`
     })).join('');
+    const fq = document.activeElement && document.activeElement.id === 'filterQ' ? document.activeElement : null;
+    const caret = fq ? fq.selectionStart : null;
     container.innerHTML = renderCover() + renderShoppingPage() + renderTryPage() + bookHtml + tryHtml;
     container.querySelectorAll('.nutrition').forEach(b => nutFill(b, getServings(b.dataset.title)));
+    if(fq){
+      const again = document.getElementById('filterQ');
+      if(again){ again.focus(); try{ again.setSelectionRange(caret, caret); }catch(e){} }
+    }
     updateTryCount();
   }
 
@@ -3449,14 +3695,22 @@
             <label class="f-label">קטגוריה
               <input type="text" id="fCategory" list="catList" value="${attr(r.category || '')}" maxlength="40" placeholder="למשל: מנות עיקריות">
             </label>
-            <label class="f-label">זמן הכנה (לא חובה)
-              <input type="text" id="fTime" value="${attr(r.time || '')}" maxlength="60" placeholder="למשל: כ-40 דקות">
+            <label class="f-label">רמת קושי (לא חובה)
+              <select id="fLevel">
+                <option value="">לא נבחר</option>
+                ${LEVELS.map(l => `<option value="${l}"${r.difficulty === l ? ' selected' : ''}>${l}</option>`).join('')}
+              </select>
             </label>
           </div>
           <datalist id="catList">${categorySuggestions().map(c => `<option value="${attr(c)}"></option>`).join('')}</datalist>
-          <label class="f-label">כמות / תוצר (לא חובה)
-            <input type="text" id="fYield" value="${attr(r.yield || '')}" maxlength="80" placeholder="למשל: 4 מנות">
-          </label>
+          <div class="f-row">
+            <label class="f-label">זמן הכנה כולל, בדקות (לא חובה)
+              <input type="number" id="fTimeMin" min="1" step="1" inputmode="numeric" value="${r.timeMin ? r.timeMin : ''}" placeholder="למשל: 45">
+            </label>
+            <label class="f-label">כמות / תוצר (לא חובה)
+              <input type="text" id="fYield" value="${attr(r.yield || '')}" maxlength="80" placeholder="למשל: 4 מנות">
+            </label>
+          </div>
           <fieldset class="f-set">
             <legend>מצרכים</legend>
             <div id="fIngredients">${ings.map(ingredientRowHtml).join('')}</div>
@@ -3513,7 +3767,13 @@
     const lines = id => get(id).split('\n').map(x => x.trim()).filter(Boolean);
     const title = get('fTitle').trim();
     const category = get('fCategory').trim() || 'שונות';
-    const time = get('fTime').trim();
+    const timeRaw = get('fTimeMin').trim();
+    const timeMin = timeRaw === '' ? 0 : Number(timeRaw);
+    if(timeRaw !== '' && (!isFinite(timeMin) || timeMin <= 0)){
+      errEl.textContent = 'זמן ההכנה צריך להיות מספר דקות גדול מ-0.';
+      return false;
+    }
+    const level = get('fLevel');
     const yld = get('fYield').trim();
     const ingredients = Array.from(document.querySelectorAll('#fIngredients .f-ing'))
       .map(row => ({ amt: row.querySelector('.f-amt').value.trim(), name: row.querySelector('.f-name').value.trim() }))
@@ -3540,8 +3800,11 @@
     if(taken){ errEl.textContent = 'כבר יש מתכון בשם הזה.'; return false; }
 
     const existing = editingId ? customRecipes.find(x => x.id === editingId) : null;
-    const data = { title, category, time, yield: yld, ingredients, steps, notes,
+    const data = { title, category, yield: yld, ingredients, steps, notes,
       createdAt: existing && existing.createdAt ? existing.createdAt : Date.now() };
+    if(timeMin > 0) data.timeMin = Math.round(timeMin);
+    else if(existing && existing.time) data.time = existing.time;   // keep an older free-text time
+    if(LEVELS.includes(level)) data.difficulty = level;
     if(nutrition) data.nutrition = nutrition;
 
     const saveBtn = document.querySelector('#recipeForm .f-save');
