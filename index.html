@@ -2884,6 +2884,24 @@
     return 'ההתחברות נכשלה' + (code ? ' (' + code + ')' : '') + '.';
   }
 
+  // Network steps must never fail silently: after this long we show a message instead of waiting forever.
+  const NET_TIMEOUT_MS = 20000;
+  function withTimeout(promise, ms){
+    return new Promise((resolve, reject) => {
+      const t = setTimeout(() => reject(Object.assign(new Error('timeout'), { code: 'timeout' })), ms);
+      promise.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+    });
+  }
+  function failText(what, err){
+    if(err && err.code === 'timeout') return what + ' לוקחת יותר מדי זמן. בדקו את החיבור ונסו שוב.';
+    return what + ' נכשלה (' + ((err && (err.code || err.message)) || 'שגיאה') + ').';
+  }
+  let loadWatch = null;
+  function showLoadFailure(text){
+    showAuthScreen('לא הצלחנו לטעון את הספר.', false, text);
+    document.getElementById('gateBody').innerHTML = '<button type="button" class="auth-submit" onclick="window.location.reload()">ניסיון נוסף</button><button type="button" class="gate-link" onclick="menuLogout()">התנתקות</button>';
+  }
+
   function showAuthError(err){
     console.error(err);
     const btn = document.getElementById('googleBtn');
@@ -2935,6 +2953,7 @@
     currentTry = null;
     editingId = null;
     appReady = false;
+    clearTimeout(loadWatch);
     ['pageContent', 'editHost', 'tocList', 'pageNav'].forEach(id => {
       const el = document.getElementById(id);
       if(el) el.innerHTML = '';
@@ -2953,6 +2972,7 @@
 
   function enterApp(){
     appReady = true;
+    clearTimeout(loadWatch);
     hideAuthScreen();
     applyBrand();
     document.getElementById('menuTryItem').style.display = hasBuiltIn ? '' : 'none';
@@ -3047,8 +3067,7 @@
     }catch(err){
       if(run !== authRun) return;
       console.error(err);
-      showAuthScreen('לא הצלחנו לטעון את הספר.', false, authErrorText(err));
-      document.getElementById('gateBody').innerHTML = '<button type="button" class="auth-submit" onclick="window.location.reload()">ניסיון נוסף</button><button type="button" class="gate-link" onclick="menuLogout()">התנתקות</button>';
+      showLoadFailure(authErrorText(err));
     }
   }
 
@@ -3115,6 +3134,11 @@
       console.error('Could not load the shared state', err);
       if(firstState){ firstState = false; loaded(); }
     }));
+
+    clearTimeout(loadWatch);
+    loadWatch = setTimeout(() => {
+      if(!appReady && run === authRun) showLoadFailure('הטעינה לוקחת יותר מדי זמן. בדקו את החיבור ונסו שוב.');
+    }, NET_TIMEOUT_MS);
   }
 
   async function showCreateFamily(run){
@@ -3135,28 +3159,36 @@
 
   async function createFamily(){
     const user = currentUser;
-    if(!user) return;
+    const errEl = document.getElementById('authError');
+    if(!user){ errEl.textContent = 'ההתחברות לא נטענה. רעננו את הדף ונסו שוב.'; return; }
     const run = authRun;
     const btn = document.getElementById('gateCreate');
+    const label = btn.textContent;
     btn.disabled = true;
-    document.getElementById('authError').textContent = '';
+    btn.textContent = 'יוצרים את הספר...';
+    errEl.textContent = '';
     const name = (document.getElementById('gateName').value || '').trim().slice(0, 60) || 'ספר המתכונים שלי';
     try{
       const fid = fbDb.collection('families').doc().id;
       const builtIn = await isOwnerEmail((user.email || '').toLowerCase());
-      await famRef(fid).set({ name, ownerUid: user.uid, inviteCode: randomCode(12), builtIn, createdAt: Date.now() });
-      await famRef(fid).collection('members').doc(user.uid).set({
-        name: user.displayName || user.email || '', email: user.email || '', role: 'owner', joinedAt: Date.now()
-      });
-      await fbDb.collection('users').doc(user.uid).set({
-        familyId: fid, name: user.displayName || '', email: user.email || ''
-      }, { merge: true });
+      await withTimeout((async () => {
+        await famRef(fid).set({ name, ownerUid: user.uid, inviteCode: randomCode(12), builtIn, createdAt: Date.now() });
+        await famRef(fid).collection('members').doc(user.uid).set({
+          name: user.displayName || user.email || '', email: user.email || '', role: 'owner', joinedAt: Date.now()
+        });
+        await fbDb.collection('users').doc(user.uid).set({
+          familyId: fid, name: user.displayName || '', email: user.email || ''
+        }, { merge: true });
+      })(), NET_TIMEOUT_MS);
       if(run !== authRun) return;
+      btn.textContent = 'טוענים את הספר...';
       await openFamily(fid, run);
     }catch(err){
       console.error(err);
-      document.getElementById('authError').textContent = 'יצירת הספר נכשלה (' + (err.code || err.message) + '). בדקו שהכללים של Firestore הוגדרו.';
+      errEl.textContent = (err && err.code === 'permission-denied')
+        ? 'אין הרשאה ליצור ספר. בדקו שהכללים של Firestore פורסמו.' : failText('יצירת הספר', err);
       btn.disabled = false;
+      btn.textContent = label;
     }
   }
 
@@ -3170,39 +3202,44 @@
   }
 
   async function confirmJoin(){
+    const errEl = document.getElementById('authError');
     const user = currentUser;
-    if(!user || !pendingJoin) return;
+    if(!user || !pendingJoin){
+      errEl.textContent = 'הקישור כבר לא פעיל. רעננו את הדף ופתחו שוב את קישור ההזמנה.';
+      return;
+    }
     const run = authRun;
     const { join, currentFid } = pendingJoin;
     const btn = document.getElementById('gateJoin');
+    const label = btn.textContent;
     btn.disabled = true;
-    document.getElementById('authError').textContent = '';
+    btn.textContent = 'מצטרפים...';
+    errEl.textContent = '';
+    const fail = msg => { errEl.textContent = msg; btn.disabled = false; btn.textContent = label; };
     try{
-      await famRef(join.fid).collection('members').doc(user.uid).set({
+      await withTimeout(famRef(join.fid).collection('members').doc(user.uid).set({
         name: user.displayName || user.email || '', email: user.email || '', role: 'member', code: join.code, joinedAt: Date.now()
-      });
+      }), NET_TIMEOUT_MS);
     }catch(err){
       console.error(err);
-      document.getElementById('authError').textContent = (err && err.code === 'permission-denied')
-        ? 'קישור ההזמנה לא תקין או שפג תוקפו.' : 'ההצטרפות נכשלה (' + (err.code || err.message) + ').';
-      btn.disabled = false;
+      fail((err && err.code === 'permission-denied') ? 'קישור ההזמנה לא תקין או שפג תוקפו.' : failText('ההצטרפות', err));
       return;
     }
     try{
       if(currentFid && currentFid !== join.fid){
-        try{ await famRef(currentFid).collection('members').doc(user.uid).delete(); }catch(e){}
+        try{ await withTimeout(famRef(currentFid).collection('members').doc(user.uid).delete(), NET_TIMEOUT_MS); }catch(e){}
       }
-      await fbDb.collection('users').doc(user.uid).set({
+      await withTimeout(fbDb.collection('users').doc(user.uid).set({
         familyId: join.fid, name: user.displayName || '', email: user.email || ''
-      }, { merge: true });
+      }, { merge: true }), NET_TIMEOUT_MS);
       pendingJoin = null;
       clearJoinParam();
       if(run !== authRun) return;
+      btn.textContent = 'טוענים את הספר...';
       await openFamily(join.fid, run);
     }catch(err){
       console.error(err);
-      document.getElementById('authError').textContent = 'ההצטרפות נכשלה (' + (err.code || err.message) + ').';
-      btn.disabled = false;
+      fail(failText('ההצטרפות', err));
     }
   }
 
