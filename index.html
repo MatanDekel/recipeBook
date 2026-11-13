@@ -291,7 +291,6 @@
     align-self:center;
   }
 
-  .toc-entry .e-title{ flex-shrink:0; }
 
   .select-check{
     width:17px;
@@ -1247,16 +1246,15 @@
 
   /* ---------- Filters, difficulty ---------- */
   .filter-bar{
-    margin:0 0 26px;
-    padding:14px 16px;
-    background:var(--paper-deep);
-    border-radius:12px;
+    margin:0 0 24px;
     display:flex;
     flex-direction:column;
-    gap:12px;
+    gap:10px;
   }
+  .filter-row{ display:flex; gap:8px; align-items:stretch; }
   .filter-q{
-    width:100%;
+    flex:1;
+    min-width:0;
     padding:10px 12px;
     border:1px solid var(--tan);
     border-radius:8px;
@@ -1266,6 +1264,48 @@
     color:var(--ink);
   }
   .filter-q:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .filter-toggle{
+    position:relative;
+    flex:0 0 46px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid var(--tan);
+    border-radius:8px;
+    background:var(--paper);
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:background 0.2s ease, color 0.2s ease;
+  }
+  .filter-toggle:hover{ background:var(--paper-deep); }
+  .filter-toggle.open{ background:var(--accent); border-color:var(--accent); color:var(--paper); }
+  .filter-toggle:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .filter-badge{
+    position:absolute;
+    top:-7px;
+    left:-7px;
+    min-width:18px;
+    height:18px;
+    padding:0 5px;
+    border-radius:999px;
+    background:var(--gold);
+    color:var(--paper);
+    font-family:'Heebo', sans-serif;
+    font-size:0.7rem;
+    font-weight:600;
+    line-height:18px;
+    text-align:center;
+  }
+  .filter-badge[hidden]{ display:none; }
+  .filter-panel{
+    background:var(--paper-deep);
+    border-radius:12px;
+    padding:14px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .filter-panel[hidden]{ display:none; }
   .filter-group{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
   .filter-label{ font-size:0.8rem; color:var(--ink-soft); min-width:70px; }
   .chip{
@@ -1280,7 +1320,8 @@
     transition:background 0.2s ease, color 0.2s ease;
   }
   .chip.active{ background:var(--accent); border-color:var(--accent); color:var(--paper); font-weight:600; }
-  .filter-foot{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:1.3em; }
+  .filter-foot{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .filter-foot[hidden]{ display:none; }
   .filter-count{ font-size:0.8rem; color:var(--sage); margin:0; }
   .filter-clear{
     background:none;
@@ -1293,8 +1334,18 @@
     cursor:pointer;
   }
 
-  .e-meta{ font-size:0.78rem; color:var(--sage); white-space:nowrap; }
+  .e-meta{ flex-shrink:0; font-size:0.78rem; color:var(--sage); white-space:nowrap; }
   .e-meta:empty{ display:none; }
+
+  /* list rows: the title may shrink/wrap, so time + difficulty never push the row out of the page */
+  .toc-entry-row .toc-entry{ min-width:0; }
+  .toc-entry .e-title{ flex:0 1 auto; min-width:0; }
+  @media (max-width: 560px){
+    .toc-entry{ flex-wrap:wrap; row-gap:2px; }
+    .toc-entry .e-leader{ display:none; }
+    .toc-entry .e-title{ flex:1 1 0; }
+    .toc-entry .e-meta{ flex:0 0 100%; padding-inline-start:34px; font-size:0.75rem; }
+  }
 
   .head-pills{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px; }
   .head-pills .prep-time{ margin:0; }
@@ -2469,16 +2520,40 @@
     return n === 0 ? 'לא נמצאו מתכונים' : n === 1 ? 'מתכון אחד מתאים' : n + ' מתכונים מתאימים';
   }
 
+  let filterPanelOpen = false;
+
+  function activeChipCount(){ return (filters.time ? 1 : 0) + (filters.level ? 1 : 0); }
+
   function filterBarHtml(){
     const chip = (kind, val, label) =>
       `<button type="button" class="chip${filters[kind] === val ? ' active' : ''}" onclick="setFilter('${kind}', '${val}')">${label}</button>`;
+    const n = activeChipCount();
     return `
       <div class="filter-bar" id="filterBar">
-        <input type="search" id="filterQ" class="filter-q" placeholder="חיפוש לפי שם מתכון..." value="${attr(filters.q)}" oninput="onFilterQuery(this.value)" aria-label="חיפוש לפי שם">
-        <div class="filter-group"><span class="filter-label">זמן הכנה</span>${TIME_FILTERS.map(f => chip('time', f.key, f.label)).join('')}</div>
-        <div class="filter-group"><span class="filter-label">רמת קושי</span>${LEVELS.map(l => chip('level', l, l)).join('')}</div>
-        <div class="filter-foot"><p class="filter-count" id="filterCount">${filterCountText()}</p><button type="button" class="filter-clear" onclick="clearFilters()">ניקוי סינון</button></div>
+        <div class="filter-row">
+          <input type="search" id="filterQ" class="filter-q" placeholder="חיפוש לפי שם מתכון..." value="${attr(filters.q)}" oninput="onFilterQuery(this.value)" aria-label="חיפוש לפי שם">
+          <button type="button" class="filter-toggle${filterPanelOpen ? ' open' : ''}" id="filterToggle" onclick="toggleFilterPanel()" aria-label="סננים" aria-expanded="${filterPanelOpen}" aria-controls="filterPanel">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
+            <span class="filter-badge" id="filterBadge"${n ? '' : ' hidden'}>${n}</span>
+          </button>
+        </div>
+        <div class="filter-panel" id="filterPanel"${filterPanelOpen ? '' : ' hidden'}>
+          <div class="filter-group"><span class="filter-label">זמן הכנה</span>${TIME_FILTERS.map(f => chip('time', f.key, f.label)).join('')}</div>
+          <div class="filter-group"><span class="filter-label">רמת קושי</span>${LEVELS.map(l => chip('level', l, l)).join('')}</div>
+        </div>
+        <div class="filter-foot" id="filterFoot"${filtersActive() ? '' : ' hidden'}><p class="filter-count" id="filterCount">${filterCountText()}</p><button type="button" class="filter-clear" onclick="clearFilters()">ניקוי סינון</button></div>
       </div>`;
+  }
+
+  function toggleFilterPanel(){
+    filterPanelOpen = !filterPanelOpen;
+    const panel = document.getElementById('filterPanel');
+    const btn = document.getElementById('filterToggle');
+    if(panel) panel.hidden = !filterPanelOpen;
+    if(btn){
+      btn.classList.toggle('open', filterPanelOpen);
+      btn.setAttribute('aria-expanded', String(filterPanelOpen));
+    }
   }
 
   function refreshLists(){
@@ -2486,6 +2561,10 @@
     if(list) list.innerHTML = renderCoverList();
     const cnt = document.getElementById('filterCount');
     if(cnt) cnt.textContent = filterCountText();
+    const foot = document.getElementById('filterFoot');
+    if(foot) foot.hidden = !filtersActive();
+    const badge = document.getElementById('filterBadge');
+    if(badge){ badge.textContent = activeChipCount(); badge.hidden = !activeChipCount(); }
     renderToc();
   }
 
