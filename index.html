@@ -1066,6 +1066,9 @@
   }
   .nut-grid span{ font-size:0.75rem; color:var(--ink-soft); }
   .nut-foot{ margin:12px 0 0; font-size:0.78rem; color:var(--ink-soft); }
+  .nut-status{ margin:4px 0 0; font-size:0.75rem; color:var(--ink-soft); min-height:1em; }
+  .nut-status.ok{ color:var(--sage); }
+  .nut-status.bad{ color:var(--accent-deep); }
   .nut-note{ margin:4px 0 0; font-size:0.72rem; color:var(--ink-soft); opacity:0.85; }
 
   @media (max-width: 480px){
@@ -2423,6 +2426,90 @@
   // ---------- מתכונים לנסות (עוד לא בספר) ----------
   // כל מתכון כאן כבר בפורמט המלא של הספר. כשמסמנים "אהבתי" הוא עובר לספר, לפי הקטגוריה שלו.
   const tryRecipes = [
+    {
+      title: "גלגל שווארמה פרגיות",
+      category: "מנות עיקריות",
+      timeMin: 80,
+      difficulty: "קל",
+      yield: "תבנית עוגת תפוזים (22 ס\"מ)",
+      ingredients: [
+        { amt: "1.5 ק\"ג", name: "סטייק פרגית" },
+        { amt: "בנדיבות", name: "שמן זית" },
+        { amt: "כף קדושה", name: "פפריקה מתוקה" },
+        { amt: "כף קדושה", name: "מרק עוף (אבקה)" },
+        { amt: "כף", name: "גריל עוף" },
+        { amt: "כף", name: "תבלין שווארמה" },
+        { amt: "לפי הטעם", name: "מלח ופלפל" },
+        { amt: "קצת", name: "דבש" },
+        { amt: "לפי הצורך", name: "בצל (הכמות לא צוינה בפוסט)" }
+      ],
+      steps: [
+        "מתבלים את הפרגית עם השמן, הפפריקה, מרק העוף, הגריל, תבלין השווארמה, המלח, הפלפל והדבש.",
+        "מרפדים תבנית בשכבת פרגית.",
+        "שמים בצל בין השכבות ובונים את השכבות עד שהתבנית מלאה.",
+        "מכניסים לתנור שחומם מראש ל-200 מעלות, שעה לפחות (אפשר יותר), עד שהגלגל עשוי היטב."
+      ],
+      notes: ["מקור: צילום מסך מעמוד מתכונים באינסטגרם. כמות הבצל ומשך האפייה המדויק לא צוינו בפוסט."],
+      nutrition: { kcal: 2330, protein: 300, fat: 113, carbs: 31 }
+    },
+    {
+      title: "סלט קולורבי ירוק",
+      category: "סלטים",
+      timeMin: 15,
+      difficulty: "קל",
+      yield: "כמות למשפחה",
+      ingredients: [
+        { amt: "2", name: "קולורבי, מקולף וקצוץ לקוביות" },
+        { amt: "2", name: "מלפפונים, קצוצים לקוביות" },
+        { amt: "חופן", name: "כוסברה קצוצה" },
+        { amt: "2 גבעולים", name: "בצל ירוק קצוץ" },
+        { amt: "חצי צרור", name: "פטרוזיליה (לרוטב)" },
+        { amt: "חופן גדול", name: "בזיליקום (לרוטב, בערך כמו הפטרוזיליה)" },
+        { amt: "1", name: "לימון שלם, מיץ (לרוטב)" },
+        { amt: "4 כפות", name: "שמן זית (לרוטב)" },
+        { amt: "חצי כפית", name: "חרדל דיז'ון חלק (לרוטב)" },
+        { amt: "לפי הטעם", name: "מלח ופלפל (לרוטב)" },
+        { amt: "לא חובה", name: "פרמזן מגורד (להגשה)" }
+      ],
+      steps: [
+        "טוחנים את מרכיבי רוטב העשבים יחד: הפטרוזיליה, הבזיליקום, מיץ הלימון, השמן, החרדל, מלח ופלפל.",
+        "מערבבים את הקולורבי, המלפפונים, הכוסברה והבצל הירוק עם הרוטב.",
+        "מגרדים מעל פרמזן (לא חובה, אבל מומלץ)."
+      ],
+      notes: ["מקור: צילום מסך מאינסטגרם. זמן ההכנה הוא הערכה לפי השלבים."],
+      nutrition: { kcal: 740, protein: 14, fat: 56, carbs: 50 }
+    },
+    {
+      title: "כרובית צלויה ברוטב קיסר",
+      category: "מנות ראשונות",
+      timeMin: 50,
+      difficulty: "קל",
+      yield: "כרוב קטן",
+      ingredients: [
+        { amt: "1", name: "כרוב קטן" },
+        { amt: "רבע כוס", name: "פירורי לחם (עדיף פנקו)" },
+        { amt: "כף", name: "שמן זית (לאפייה)" },
+        { amt: "קצת", name: "מלח גס (לפירורים)" },
+        { amt: "רבע כוס", name: "מים (לאפייה)" },
+        { amt: "3 כפות", name: "מיונז (לרוטב)" },
+        { amt: "2 כפות", name: "שמן זית (לרוטב)" },
+        { amt: "מחצי לימון", name: "מיץ (לרוטב)" },
+        { amt: "חצי שן", name: "שום כתושה (לרוטב)" },
+        { amt: "כפית", name: "חרדל דיז'ון גרגירים (לרוטב)" },
+        { amt: "כפית", name: "חומץ תפוחים (לרוטב)" },
+        { amt: "כפית", name: "רוטב סויה (לא חובה, אפשר מלח לפי הטעם)" },
+        { amt: "לפי הטעם", name: "פלפל שחור (לרוטב)" }
+      ],
+      steps: [
+        "מחממים תנור ל-200 מעלות. חותכים את הכרוב לרבעים או לפלחים קטנים יותר. מניחים בתבנית עם שמן זית, בלי מלח ופלפל, ומוסיפים רבע כוס מים. סוגרים בנייר כסף ואופים כחצי שעה, עד שהכרוב מתרכך.",
+        "מורידים את הנייר ואופים עוד כ-10 דקות, עד שמשחים. אפשר לשרוף קצת בברנר בסוף (לא חובה).",
+        "מטגנים את הפירורים במחבת על אש בינונית עם כף שמן זית וקצת מלח גס, 2-3 דקות.",
+        "מערבבים את כל מרכיבי הרוטב. אם הוא סמיך מדי, מוסיפים קצת מים.",
+        "מניחים את פלחי הכרוב על צלחת, יוצקים את הרוטב, מפזרים את הפירורים ומגרדים פרמזן אם רוצים."
+      ],
+      notes: ["מקור: צילום מסך מאינסטגרם. זמן ההכנה הוא הערכה לפי השלבים."],
+      nutrition: { kcal: 980, protein: 17, fat: 76, carbs: 55 }
+    }
   ];
 
   // ---------- Who is using the book ----------
@@ -2978,16 +3065,38 @@
   let servingsMap = {};
   let servingsDirty = false;
   let servingsSaveTimer = null;
+  function setServingsStatus(text, kind){
+    document.querySelectorAll('.nut-status').forEach(el => {
+      el.textContent = text || '';
+      el.className = 'nut-status' + (kind ? ' ' + kind : '');
+    });
+  }
+
+  // Writes the servings to the family state right away (no waiting), so leaving the page can't lose them.
+  function flushServings(){
+    if(!servingsDirty) return;
+    clearTimeout(servingsSaveTimer);
+    if(!fbDb || !familyId) return;
+    const snapshot = Object.assign({}, servingsMap);
+    setServingsStatus('שומרים...', '');
+    stateRef().set({ servings: snapshot }, { merge: true }).then(() => {
+      if(JSON.stringify(snapshot) === JSON.stringify(servingsMap)) servingsDirty = false;   // newer edits stay pending
+      setServingsStatus('נשמר ✓', 'ok');
+    }).catch(err => {
+      console.error('Could not save the servings', err);
+      setServingsStatus('לא נשמר. נסו שוב.', 'bad');   // stays dirty, so a later edit or a reload-free retry sends it
+    });
+  }
+
   function saveServings(){
     servingsDirty = true;
     clearTimeout(servingsSaveTimer);
-    servingsSaveTimer = setTimeout(() => {
-      servingsDirty = false;
-      if(!fbDb || !familyId) return;
-      stateRef().set({ servings: servingsMap }, { merge: true })
-        .catch(e => console.error('Could not save the servings', e));
-    }, 600);
+    servingsSaveTimer = setTimeout(flushServings, 500);
   }
+
+  window.addEventListener('pagehide', flushServings);
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') flushServings(); });
+
   function getServings(title){
     const n = Number(servingsMap[title]);
     return n > 0 ? n : 1;
@@ -3021,6 +3130,7 @@
           <div><b class="nut-carbs"></b><span>פחמימות (ג׳)</span></div>
         </div>
         <p class="nut-foot"></p>
+        <p class="nut-status"></p>
         <p class="nut-note">הערכה גסה לפי המצרכים שבמתכון, בלי מצרכים להגשה או לקישוט שאין להם כמות.</p>
       </div>`;
   }
@@ -3055,6 +3165,7 @@
     const s = getServings(block.dataset.title);
     input.value = s;
     nutFill(block, s);
+    flushServings();
   }
 
   function stepServings(id, delta){
