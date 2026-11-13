@@ -1376,6 +1376,64 @@
     .head-pills{ margin-bottom:10px; }
     .level-badge{ font-size:0.7rem; padding:3px 8px; }
   }
+
+  /* ---------- Edit time / difficulty ---------- */
+  .meta-edit-btn{
+    margin:0 0 18px;
+    background:none;
+    border:1px dashed var(--tan);
+    color:var(--accent-deep);
+    font-family:'Assistant', sans-serif;
+    font-size:0.85rem;
+    padding:6px 14px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .meta-edit-btn:hover{ background:var(--paper-deep); }
+  .meta-dialog{
+    position:fixed;
+    inset:0;
+    z-index:950;
+    background:rgba(58,46,39,0.5);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .meta-dialog[hidden]{ display:none; }
+  .meta-card{
+    background:var(--paper);
+    border-radius:16px;
+    padding:28px;
+    width:100%;
+    max-width:380px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    box-shadow:0 20px 60px rgba(58,46,39,0.3);
+  }
+  .meta-card h3{
+    font-family:var(--font-display);
+    font-size:1.3rem;
+    color:var(--accent-deep);
+    margin:0;
+  }
+  .meta-card input[type=number],
+  .meta-card select{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--tan);
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-size:0.95rem;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .meta-card input:focus, .meta-card select:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .meta-card .f-actions{ display:flex; gap:10px; }
+  @media print{
+    .meta-dialog, .meta-edit-btn{ display:none !important; }
+  }
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -1412,6 +1470,28 @@
     <div class="menu-user">
       <span id="menuUser"></span>
       <button class="menu-logout" onclick="menuLogout()">התנתקות</button>
+    </div>
+  </div>
+
+  <div class="meta-dialog" id="metaDialog" hidden onclick="if(event.target===this) closeMetaDialog()">
+    <div class="meta-card" role="dialog" aria-modal="true" aria-labelledby="metaTitle">
+      <h3 id="metaTitle">עריכת זמן ורמה</h3>
+      <p class="gate-note" id="metaRecipe"></p>
+      <label class="f-label">זמן הכנה כולל, בדקות
+        <input type="number" id="metaMin" min="1" step="1" inputmode="numeric" placeholder="למשל: 45">
+      </label>
+      <label class="f-label">רמת קושי
+        <select id="metaLevel"></select>
+      </label>
+      <label class="f-label">כמות מנות / תוצר
+        <input type="text" id="metaYield" maxlength="80" placeholder="למשל: 4 מנות">
+      </label>
+      <p class="gate-note" id="metaHint"></p>
+      <p class="f-error" id="metaErr"></p>
+      <div class="f-actions">
+        <button type="button" class="f-save" id="metaSave" onclick="saveMeta()">שמירה</button>
+        <button type="button" class="f-cancel" onclick="closeMetaDialog()">ביטול</button>
+      </div>
     </div>
   </div>
 
@@ -2392,7 +2472,8 @@
     recipes = combined
       .map((r, k) => ({ r, k }))
       .sort((a, b) => (order.indexOf(a.r.category) - order.indexOf(b.r.category)) || (a.k - b.k))
-      .map(x => x.r);
+      .map(x => x.r)
+      .map(applyMeta);
   }
 
   function pendingTry(){
@@ -2584,6 +2665,82 @@
     filters = { q: '', time: '', level: '' };
     rebuildFilterBar();
     refreshLists();
+  }
+
+  /* ---------- Editing time and difficulty ---------- */
+  // Recipes written into the file keep their text; the family's edits sit in the shared state (state/main.meta).
+  // An empty value for one of those means "back to the original".
+  let builtMeta = {};
+  function applyMeta(r){
+    const m = builtMeta[r.title];
+    if(!m) return r;
+    const o = Object.assign({}, r);
+    if(m.timeMin) o.timeMin = Number(m.timeMin);
+    if(m.difficulty && LEVELS.includes(m.difficulty)) o.difficulty = m.difficulty;
+    if(m.yield) o.yield = m.yield;
+    return o;
+  }
+
+  let metaTarget = null;   // { title, id, custom }
+
+  function openMetaDialog(title){
+    const r = recipes.find(x => x.title === title);
+    if(!r) return;
+    metaTarget = { title, id: r.id || null, custom: !!r.custom };
+    document.getElementById('metaRecipe').textContent = r.title;
+    document.getElementById('metaMin').value = r.timeMin ? r.timeMin : '';
+    document.getElementById('metaYield').value = r.yield || '';
+    document.getElementById('metaLevel').innerHTML = '<option value="">לא נבחר</option>' +
+      LEVELS.map(l => `<option value="${l}"${getLevel(r) === l ? ' selected' : ''}>${l}</option>`).join('');
+    document.getElementById('metaHint').textContent = r.custom ? '' : 'השארת שדה ריק מחזירה את הערך המקורי של המתכון.';
+    document.getElementById('metaErr').textContent = '';
+    document.getElementById('metaDialog').hidden = false;
+    setTimeout(() => document.getElementById('metaMin').focus(), 0);
+  }
+
+  function closeMetaDialog(){
+    document.getElementById('metaDialog').hidden = true;
+    metaTarget = null;
+  }
+
+  function saveMeta(){
+    const err = document.getElementById('metaErr');
+    const btn = document.getElementById('metaSave');
+    if(!metaTarget) return;
+    const raw = document.getElementById('metaMin').value.trim();
+    const level = document.getElementById('metaLevel').value;
+    const yieldRaw = document.getElementById('metaYield').value.trim().slice(0, 80);
+    const mins = raw === '' ? 0 : Number(raw);
+    if(raw !== '' && (!isFinite(mins) || mins <= 0 || Math.round(mins) !== mins)){
+      err.textContent = 'זמן ההכנה צריך להיות מספר שלם של דקות, גדול מ-0.';
+      return;
+    }
+    err.textContent = '';
+    btn.disabled = true;
+    const t = metaTarget;
+    const finish = () => { btn.disabled = false; closeMetaDialog(); };
+    const fail = e => { console.error(e); btn.disabled = false; err.textContent = failText('השמירה', e); };
+
+    if(t.custom && t.id){
+      const rec = customRecipes.find(x => x.id === t.id);
+      if(!rec){ fail(new Error('missing')); return; }
+      const data = Object.assign({}, rec);
+      delete data.id; delete data.custom;
+      if(mins) data.timeMin = Math.round(mins); else delete data.timeMin;
+      data.yield = yieldRaw;
+      if(level) data.difficulty = level; else delete data.difficulty;
+      withTimeout(recipesCollection().doc(t.id).set(data), NET_TIMEOUT_MS).then(() => {
+        const k = customRecipes.findIndex(x => x.id === t.id);
+        if(k >= 0) customRecipes[k] = Object.assign({}, data, { id: t.id, custom: true });
+        refreshBook(); finish();
+      }).catch(fail);
+    } else {
+      const meta = Object.assign({}, builtMeta);
+      meta[t.title] = { timeMin: mins ? Math.round(mins) : null, difficulty: level || null, yield: yieldRaw || null };
+      withTimeout(stateRef().set({ meta }, { merge: true }), NET_TIMEOUT_MS).then(() => {
+        builtMeta = meta; refreshBook(); finish();
+      }).catch(fail);
+    }
   }
 
   function groupByCategory(){
@@ -2917,6 +3074,7 @@
         ${o.badge}
         <h2>${escapeHtml(r.title)}</h2>
         ${(timeText(r) || getLevel(r)) ? `<p class="head-pills">${timeText(r) ? `<span class="prep-time">⏱ זמן הכנה כולל: ${escapeHtml(timeText(r))}</span>` : ''}${getLevel(r) ? `<span class="level-badge level-${LEVEL_CLASS[getLevel(r)]}">רמת קושי: ${getLevel(r)}</span>` : ''}</p>` : ''}
+        ${o.cls === 'recipe' ? `<button type="button" class="meta-edit-btn" data-title="${attr(r.title)}" onclick="openMetaDialog(this.dataset.title)">✏️ עריכת זמן ורמה</button>` : ''}
         ${r.yield ? `<div class="meta-row">
           <span>🍽️ ${escapeHtml(r.yield)}</span>
         </div>` : ''}
@@ -3273,6 +3431,7 @@
     selected = new Set();
     ownedItems = new Set();
     promoted = new Set();
+    builtMeta = {};
     servingsMap = {};
     selectMode = false;
     current = 'toc';
@@ -3349,8 +3508,11 @@
     const promotedChanged = !setsEqual(newPromoted, promoted);
     promoted = newPromoted;
     if(!servingsDirty) servingsMap = Object.assign({}, newServ);   // keep what is still being typed here
+    const metaBefore = JSON.stringify(builtMeta);
+    builtMeta = (data.meta && typeof data.meta === 'object') ? data.meta : {};
+    const metaChanged = JSON.stringify(builtMeta) !== metaBefore;
     if(isFirst) return;
-    if(promotedChanged) refreshBook(); else refreshNutritionBlocks();
+    if(promotedChanged || metaChanged) refreshBook(); else refreshNutritionBlocks();
   }
 
   /* ----- the family (shared book) ----- */
