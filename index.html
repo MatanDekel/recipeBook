@@ -888,6 +888,9 @@
     margin-top:40px;
     padding-top:24px;
     border-top:1px solid var(--tan);
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
   }
 
   .try-like-btn{
@@ -903,6 +906,18 @@
     transition:background 0.2s ease;
   }
   .try-like-btn:hover{ background:#65735a; }
+  .try-drop-btn{
+    background:none;
+    color:var(--ink-soft);
+    border:1px solid var(--tan);
+    padding:14px 24px;
+    border-radius:8px;
+    font-family:'Assistant', sans-serif;
+    font-weight:600;
+    font-size:0.95rem;
+    cursor:pointer;
+  }
+  .try-drop-btn:hover{ color:var(--ink); border-color:var(--ink-soft); }
 
   .try-note{
     font-size:0.78rem;
@@ -911,7 +926,7 @@
   }
 
   @media (max-width: 760px){
-    .try-like-btn{ width:100%; }
+    .try-like-btn, .try-drop-btn{ width:100%; }
   }
 
   @media print{
@@ -1436,6 +1451,35 @@
   .meta-card .f-actions{ display:flex; gap:10px; }
   @media print{
     .meta-dialog, .meta-edit-btn{ display:none !important; }
+  }
+
+  /* ---------- Export one recipe ---------- */
+  .pdf-recipe-btn{
+    margin:0 0 18px 10px;
+    background:none;
+    border:1px dashed var(--tan);
+    color:var(--accent-deep);
+    font-family:'Assistant', sans-serif;
+    font-size:0.85rem;
+    padding:6px 14px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .pdf-recipe-btn:hover{ background:var(--paper-deep); }
+  @media print{
+    .pdf-recipe-btn{ display:none !important; }
+    body.print-single .toc,
+    body.print-single .cover,
+    body.print-single .shopping-page,
+    body.print-single .try-page,
+    body.print-single .recipe:not(.printing),
+    body.print-single .page-nav,
+    body.print-single .menu-btn,
+    body.print-single .menu-panel,
+    body.print-single #editHost,
+    body.print-single .meta-dialog{ display:none !important; }
+    body.print-single .recipe.printing{ display:block !important; page-break-after:auto !important; animation:none; }
+    body.print-single .nutrition{ display:none !important; }
   }
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -2534,6 +2578,8 @@
 
   // "Tried it and liked it" marks - shared by the whole family (families/{id}/state/main)
   let promoted = new Set();
+  // "Didn't work out" marks - try-recipes removed from the try list (shared by the family)
+  let dropped = new Set();
   function savePromoted(){
     if(!fbDb || !familyId) return;
     stateRef().set({ promoted: [...promoted] }, { merge: true })
@@ -2563,9 +2609,13 @@
       .map(applyMeta);
   }
 
+  function isTryVisible(r){
+    return !promoted.has(r.title) && !dropped.has(r.title);
+  }
+
   function pendingTry(){
     if(!hasBuiltIn) return [];
-    return tryRecipes.map((r, idx) => ({ r, idx })).filter(x => !promoted.has(x.r.title));
+    return tryRecipes.map((r, idx) => ({ r, idx })).filter(x => isTryVisible(x.r));
   }
 
   let current = 'toc';
@@ -2752,6 +2802,33 @@
     filters = { q: '', time: '', level: '' };
     rebuildFilterBar();
     refreshLists();
+  }
+
+  /* ---------- Export one recipe to PDF ---------- */
+  // Uses the browser's print dialog: only the chosen recipe is shown, and the suggested file name is the recipe's name.
+  let printRestore = null;
+  function printOneRecipe(id){
+    const art = document.getElementById(id);
+    if(!art) return;
+    const idx = Number(String(id).replace('recipe-', ''));
+    const rec = recipes[idx];
+    if(!rec) return;
+    if(printRestore) printRestore();
+    const prevTitle = document.title;
+    document.title = rec.title;
+    document.body.classList.add('print-single');
+    art.classList.add('printing');
+    const done = () => {
+      document.body.classList.remove('print-single');
+      art.classList.remove('printing');
+      document.title = prevTitle;
+      printRestore = null;
+      window.removeEventListener('afterprint', done);
+    };
+    printRestore = done;
+    window.addEventListener('afterprint', done);
+    // let the classes apply before the dialog opens
+    setTimeout(() => window.print(), 50);
   }
 
   /* ---------- Editing time and difficulty ---------- */
@@ -3186,6 +3263,7 @@
         <h2>${escapeHtml(r.title)}</h2>
         ${(timeText(r) || getLevel(r)) ? `<p class="head-pills">${timeText(r) ? `<span class="prep-time">⏱ זמן הכנה כולל: ${escapeHtml(timeText(r))}</span>` : ''}${getLevel(r) ? `<span class="level-badge level-${LEVEL_CLASS[getLevel(r)]}">רמת קושי: ${getLevel(r)}</span>` : ''}</p>` : ''}
         ${o.cls === 'recipe' ? `<button type="button" class="meta-edit-btn" data-title="${attr(r.title)}" onclick="openMetaDialog(this.dataset.title)">✏️ עריכת זמן ורמה</button>` : ''}
+        ${o.cls === 'recipe' ? `<button type="button" class="pdf-recipe-btn" data-id="${o.id}" onclick="printOneRecipe(this.dataset.id)">📄 ייצוא מתכון זה ל-PDF</button>` : ''}
         ${r.yield ? `<div class="meta-row">
           <span>🍽️ ${escapeHtml(r.yield)}</span>
         </div>` : ''}
@@ -3264,7 +3342,7 @@
       badge: `<div class="chapter-num">${pad(i)}</div>`,
       footer: r.custom ? customActionsHtml(r) : ''
     })).join('');
-    const tryHtml = (hasBuiltIn ? tryRecipes : []).map((r, idx) => promoted.has(r.title) ? '' : renderRecipeArticle(r, {
+    const tryHtml = (hasBuiltIn ? tryRecipes : []).map((r, idx) => !isTryVisible(r) ? '' : renderRecipeArticle(r, {
       cls: 'recipe try-recipe',
       id: `try-${idx}`,
       active: current === 'tryRecipe' && currentTry === idx,
@@ -3272,8 +3350,8 @@
       badge: '<div class="try-badge">לנסות</div>',
       footer: `
         <div class="try-actions">
-          <button class="try-like-btn" onclick="promoteTry(${idx})">✓ ניסיתי ואהבתי - הוסיפו לספר המתכונים</button>
-          <p class="try-note">ההוספה לספר נשמרת במכשיר הזה.</p>
+          <button class="try-like-btn" onclick="promoteTry(${idx})">✓ הצליח - להעביר לספר המתכונים</button>
+          <button class="try-drop-btn" onclick="dropTry(${idx})">✕ לא הצליח - למחוק</button>
         </div>`
     })).join('');
     const fq = document.activeElement && document.activeElement.id === 'filterQ' ? document.activeElement : null;
@@ -3366,6 +3444,23 @@
     saveSelected();
     updateShoppingCount();
     showRecipe(recipes.findIndex(x => x.title === r.title));
+  }
+
+  // "Didn't work out" - removes the recipe from the try list (saved for the whole family).
+  function dropTry(idx){
+    const r = tryRecipes[idx];
+    if(!r) return;
+    if(!window.confirm('למחוק את "' + r.title + '" מרשימת המתכונים לנסות?')) return;
+    const prev = new Set(dropped);
+    dropped.add(r.title);
+    if(!fbDb || !familyId){ showTryList(); return; }
+    withTimeout(stateRef().set({ dropped: [...dropped] }, { merge: true }), NET_TIMEOUT_MS)
+      .then(() => showTryList())
+      .catch(err => {
+        dropped = prev;
+        showTryList();
+        window.alert(failText('המחיקה', err));
+      });
   }
 
   function handleShoppingFabClick(){
@@ -3542,6 +3637,7 @@
     selected = new Set();
     ownedItems = new Set();
     promoted = new Set();
+    dropped = new Set();
     builtMeta = {};
     servingsMap = {};
     selectMode = false;
@@ -3589,7 +3685,7 @@
       const ni = curTitle === null ? -1 : recipes.findIndex(x => x.title === curTitle);
       current = ni >= 0 ? ni : 'toc';
     }
-    if(current === 'tryRecipe' && (!tryRecipes[currentTry] || promoted.has(tryRecipes[currentTry].title))) current = 'try';
+    if(current === 'tryRecipe' && (!tryRecipes[currentTry] || !isTryVisible(tryRecipes[currentTry]))) current = 'try';
     if(!appReady) return;
     renderToc();
     renderPage();
@@ -3622,8 +3718,11 @@
     const metaBefore = JSON.stringify(builtMeta);
     builtMeta = (data.meta && typeof data.meta === 'object') ? data.meta : {};
     const metaChanged = JSON.stringify(builtMeta) !== metaBefore;
+    const newDropped = new Set(Array.isArray(data.dropped) ? data.dropped : []);
+    const droppedChanged = !setsEqual(newDropped, dropped);
+    dropped = newDropped;
     if(isFirst) return;
-    if(promotedChanged || metaChanged) refreshBook(); else refreshNutritionBlocks();
+    if(promotedChanged || metaChanged || droppedChanged) refreshBook(); else refreshNutritionBlocks();
   }
 
   /* ----- the family (shared book) ----- */
