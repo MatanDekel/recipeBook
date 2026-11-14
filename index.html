@@ -2524,7 +2524,7 @@
       nutrition: { kcal: 740, protein: 14, fat: 56, carbs: 50 }
     },
     {
-      title: "כרובית צלויה ברוטב קיסר",
+      title: "כרוב צלוי ברוטב קיסר",
       category: "מנות ראשונות",
       timeMin: 50,
       difficulty: "קל",
@@ -2805,30 +2805,24 @@
   }
 
   /* ---------- Export one recipe to PDF ---------- */
-  // Uses the browser's print dialog: only the chosen recipe is shown, and the suggested file name is the recipe's name.
-  let printRestore = null;
+  // Opens a separate print window that holds only this recipe, so the print dialog never shows the rest of the book.
   function printOneRecipe(id){
     const art = document.getElementById(id);
     if(!art) return;
     const idx = Number(String(id).replace('recipe-', ''));
     const rec = recipes[idx];
     if(!rec) return;
-    if(printRestore) printRestore();
-    const prevTitle = document.title;
-    document.title = rec.title;
-    document.body.classList.add('print-single');
-    art.classList.add('printing');
-    const done = () => {
-      document.body.classList.remove('print-single');
-      art.classList.remove('printing');
-      document.title = prevTitle;
-      printRestore = null;
-      window.removeEventListener('afterprint', done);
-    };
-    printRestore = done;
-    window.addEventListener('afterprint', done);
-    // let the classes apply before the dialog opens
-    setTimeout(() => window.print(), 50);
+    const w = window.open('', '_blank');
+    if(!w){ window.alert('הדפדפן חסם את החלון. אפשרו חלונות קופצים לאתר הזה ונסו שוב.'); return; }
+    const clone = art.cloneNode(true);
+    clone.querySelectorAll('.back-to-list, .meta-edit-btn, .pdf-recipe-btn, .nutrition, .page-nav, .chapter-num').forEach(el => el.remove());
+    clone.classList.remove('active');
+    clone.classList.add('printing');
+    const styles = [...document.querySelectorAll('link[rel="stylesheet"], style')].map(el => el.outerHTML).join('\n');
+    w.document.open();
+    w.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(rec.title)}</title>${styles}<style>article.printing{ display:block !important; animation:none !important; box-shadow:none !important; }</style></head><body><main>${clone.outerHTML}</main></body></html>`);
+    w.document.close();
+    setTimeout(() => { try{ w.focus(); w.print(); }catch(e){} }, 400);
   }
 
   /* ---------- Editing time and difficulty ---------- */
