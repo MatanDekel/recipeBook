@@ -432,6 +432,7 @@
     gap:8px;
   }
   .ingredients li:last-child{ border-bottom:none; }
+  .ingredients + h3{ margin-top:22px; }
 
   .ingredients .amt{
     font-family:'Heebo', sans-serif;
@@ -2651,16 +2652,16 @@
       difficulty: "בינוני",
       yield: "6-8 קאדות",
       ingredients: [
-        { amt: "500 גרם", name: "קמח לבן" },
-        { amt: "15 גרם (כפית יבשים)", name: "שמרים" },
-        { amt: "כף", name: "סוכר" },
-        { amt: "300 מ\"ל", name: "מים פושרים" },
+        { amt: "500 גרם", name: "קמח לבן (לבצק)" },
+        { amt: "15 גרם (כפית יבשים)", name: "שמרים (לבצק)" },
+        { amt: "כף", name: "סוכר (לבצק)" },
+        { amt: "300 מ\"ל", name: "מים פושרים (לבצק)" },
         { amt: "50 גרם", name: "חמאה רכה (לבצק)" },
-        { amt: "כף", name: "מלח" },
+        { amt: "כף", name: "מלח (לבצק)" },
         { amt: "250 גרם", name: "גבינת חמד (למילוי)" },
         { amt: "250 גרם", name: "מוצרלה (למילוי)" },
         { amt: "50 גרם", name: "חמאה רכה (למילוי)" },
-        { amt: "לריסוס", name: "שמן זית או ספריי שמן" }
+        { amt: "לריסוס", name: "שמן זית או ספריי שמן (לבצק)" }
       ],
       steps: [
         "מערבבים את המים הפושרים עם הסוכר והשמרים, מוסיפים קמח ולשים. מוסיפים חמאה רכה ומלח, ולשים כ-8 דקות, עד שהבצק חלק וגמיש.",
@@ -2693,8 +2694,8 @@
         { amt: "חצי כפית", name: "כמון (לקציצות)" },
         { amt: "חצי כפית", name: "בהרט (לקציצות)" },
         { amt: "4 כפות", name: "שמן (לקציצות)" },
-        { amt: "קצת", name: "שמן זית ומלח גס (לאפייה)" },
-        { amt: "לפי הצורך", name: "שמן (לרוטב, בנדיבות)" },
+        { amt: "קצת", name: "שמן זית ומלח גס, לאפייה (לקציצות)" },
+        { amt: "לפי הצורך", name: "שמן, בנדיבות (לרוטב)" },
         { amt: "2 כפות", name: "פפריקה מתוקה בשמן (לרוטב)" },
         { amt: "כפית", name: "פפריקה חריפה (לרוטב)" },
         { amt: "כף", name: "תבלין גריל עוף (לרוטב)" },
@@ -2980,7 +2981,10 @@
     const lv = getLevel(rec);
     const pills = [tt ? '⏱ זמן הכנה כולל: ' + tt : '', lv ? 'רמת קושי: ' + lv : '', rec.yield ? '🍽️ ' + rec.yield : '']
       .filter(Boolean).map(t => '<span class="pill">' + escapeHtml(t) + '</span>').join('');
-    const ings = (rec.ingredients || []).map(i => '<li><b>' + escapeHtml(i.amt || '') + '</b> ' + escapeHtml(i.name || '') + '</li>').join('');
+    const ings = ingredientGroups(rec.ingredients).map(g =>
+      '<section><h2>' + (g.label ? 'מצרכים ' + escapeHtml(g.label) : 'מצרכים') + '</h2><ul class="ing">'
+      + g.items.map(i => '<li><b>' + escapeHtml(i.amt) + '</b> ' + escapeHtml(i.name) + '</li>').join('')
+      + '</ul></section>').join('');
     const steps = (rec.steps || []).map(t => '<li>' + escapeHtml(t) + '</li>').join('');
     const notes = (rec.notes || []).map(t => '<li>' + escapeHtml(t) + '</li>').join('');
     const css = `
@@ -3011,7 +3015,7 @@
       + '<h1>' + escapeHtml(rec.title) + '</h1>'
       + (pills ? '<div class="pills">' + pills + '</div>' : '')
       + '<hr>'
-      + (ings ? '<section><h2>מצרכים</h2><ul class="ing">' + ings + '</ul></section>' : '')
+      + ings
       + (steps ? '<section><h2>אופן ההכנה</h2><ol class="steps">' + steps + '</ol></section>' : '')
       + (notes ? '<section><h2>הערות, הארות ותוספות</h2><ul class="notes">' + notes + '</ul></section>' : '')
       + '</body></html>';
@@ -3450,6 +3454,36 @@
     onServingsInput(id, input);
   }
 
+  // An ingredient name may end with a group label in parentheses, e.g. "קמח (לבצק)".
+  // Split the list into groups so the recipe shows a heading per group ("מצרכים לבצק") instead of repeating the label on every line.
+  function ingredientGroups(list){
+    const groups = [];
+    const byLabel = {};
+    (list || []).forEach(ing => {
+      const name = String(ing.name || '');
+      const m = name.match(/^(.*?)\s*\((ל[^()]*)\)\s*$/);
+      let label = '';
+      let clean = name;
+      // "(לפי הטעם)" and "(לא חובה)" are notes about the item, not group labels
+      if(m && !/^ל(פי|א)(\s|$)/.test(m[2])){ label = m[2].trim(); clean = m[1].trim(); }
+      if(!Object.prototype.hasOwnProperty.call(byLabel, label)){
+        byLabel[label] = { label, items: [] };
+        groups.push(byLabel[label]);
+      }
+      byLabel[label].items.push({ amt: ing.amt || '', name: clean });
+    });
+    if(groups.length === 1) groups[0].label = '';
+    return groups;
+  }
+
+  function ingredientsHtml(r){
+    return ingredientGroups(r.ingredients).map(g => `
+            <h3>${g.label ? 'מצרכים ' + escapeHtml(g.label) : 'מצרכים'}</h3>
+            <ul class="ingredients">
+              ${g.items.map(ing => `<li><span class="amt">${escapeHtml(ing.amt)}</span><span>${escapeHtml(ing.name)}</span></li>`).join('')}
+            </ul>`).join('');
+  }
+
   function renderRecipeArticle(r, o){
     return `
       <article class="${o.cls}${o.active ? ' active' : ''}" id="${o.id}">
@@ -3465,11 +3499,7 @@
         ${nutritionHtml(r, o.id)}
         <hr class="divider">
         <div class="cols ${r.steps && r.steps.length ? '' : 'single'}">
-          <div class="block">
-            <h3>מצרכים</h3>
-            <ul class="ingredients">
-              ${r.ingredients.map(ing => `<li><span class="amt">${escapeHtml(ing.amt)}</span><span>${escapeHtml(ing.name)}</span></li>`).join('')}
-            </ul>
+          <div class="block">${ingredientsHtml(r)}
           </div>
           ${r.steps && r.steps.length ? `
           <div class="block">
